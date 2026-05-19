@@ -1,0 +1,3427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Spear &amp; Shield</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;1,400&display=swap');
+
+:root {
+  --parchment: #f2e8c9;
+  --parchment-dark: #d4c48a;
+  --ink: #2a1a0a;
+  --blood: #8b1a1a;
+  --gold: #c9922a;
+  --gold-light: #f0c060;
+  --bg: #080500;
+  --border: #3a2800;
+  --stam: #d4a040;
+  --poison: #6cbe40;
+  --bleed: #c03030;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+*, *::before, *::after {
+  margin: 0; padding: 0; box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Crimson Text', Georgia, serif;
+  color: var(--parchment);
+  -webkit-user-select: none; user-select: none;
+}
+
+/* ═══ TITLE ═══ */
+#title-screen {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at 50% 38%, #1e0e02 0%, #030200 100%);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 200;
+  padding: 1.5rem 1.4rem;
+  padding-top: calc(1.5rem + var(--safe-t));
+  padding-bottom: calc(1.5rem + var(--safe-b));
+  overflow-y: auto;
+}
+.t-emblem {
+  font-size: clamp(3rem, 16vw, 5rem);
+  filter: drop-shadow(0 0 24px var(--gold));
+  animation: pulse 3s ease-in-out infinite;
+  margin-bottom: 0.3rem;
+}
+@keyframes pulse {
+  0%,100% { filter: drop-shadow(0 0 16px var(--gold)); transform: scale(1); }
+  50%     { filter: drop-shadow(0 0 36px var(--gold-light)); transform: scale(1.06); }
+}
+.t-title {
+  font-family: 'Cinzel', serif; font-weight: 900;
+  font-size: clamp(1.8rem, 9vw, 3.4rem);
+  color: var(--gold-light);
+  text-shadow: 0 0 40px rgba(201,146,42,.7), 2px 2px 0 #3a2000;
+  letter-spacing: 0.12em; text-align: center;
+}
+.t-sub {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.7rem, 3.5vw, 1rem);
+  color: var(--parchment-dark); letter-spacing: 0.3em; margin-top: 0.3rem;
+}
+.t-lore {
+  max-width: 320px; text-align: center;
+  margin: 1.2rem auto 1.4rem;
+  font-size: clamp(0.85rem, 3.8vw, 1rem);
+  line-height: 1.65; color: #c4a97a; font-style: italic;
+}
+.btn-gold {
+  font-family: 'Cinzel', serif; font-weight: 700;
+  font-size: clamp(0.95rem, 4.5vw, 1.15rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  border: none; cursor: pointer;
+  padding: 0.8rem 2.4rem;
+  clip-path: polygon(10px 0%,calc(100% - 10px) 0%,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0% calc(100% - 10px),0% 10px);
+  transition: transform 0.12s;
+  min-height: 50px; min-width: 200px;
+  margin: 0.3rem 0;
+}
+.btn-gold:active { transform: scale(0.95); }
+.btn-gold.secondary {
+  background: linear-gradient(135deg, #5a4828, #3a2800);
+  color: var(--gold-light);
+}
+.btn-gold.danger {
+  background: linear-gradient(135deg, #6a2020, #3a1010);
+  color: #ff9090;
+}
+
+/* High score / saves on title */
+.title-stats {
+  background: rgba(201,146,42,.08);
+  border: 1px solid rgba(201,146,42,.3);
+  padding: 0.7rem 1rem;
+  width: 100%; max-width: 280px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.title-stats-label {
+  font-family: 'Cinzel', serif; font-size: 0.65rem;
+  color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+.title-stats-val {
+  font-family: 'Cinzel', serif; font-size: 1.6rem; color: var(--gold-light); font-weight: 700;
+}
+.title-stats-sub {
+  font-size: 0.78rem; color: #8a7050; margin-top: 0.2rem;
+}
+.diff-row {
+  display: flex; gap: 0.4rem; justify-content: center;
+  margin-bottom: 0.8rem; flex-wrap: wrap;
+}
+.diff-btn {
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.45rem 0.9rem; min-height: 38px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: rgba(255,255,255,.04); color: #8a7050; cursor: pointer;
+  transition: all 0.15s;
+}
+.diff-btn.active {
+  border-color: var(--gold-light);
+  border-width: 2px;
+  padding: calc(0.45rem - 1px) calc(0.9rem - 1px);
+  color: var(--gold-light);
+  background: rgba(201,146,42,.28);
+  box-shadow: 0 0 12px rgba(240,192,96,.4);
+  font-weight: 700;
+}
+
+/* ═══ GAME SHELL ═══ */
+#game-main {
+  display: none; flex-direction: column;
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+}
+
+#hud {
+  background: linear-gradient(180deg, #1c0e02 0%, #0d0700 100%);
+  border-bottom: 1.5px solid var(--gold);
+  padding: 0.3rem 0.75rem;
+  padding-top: calc(0.3rem + var(--safe-t));
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.6rem; row-gap: 0.18rem;
+  align-items: center;
+}
+.hero-name {
+  font-family: 'Cinzel', serif; font-size: 0.74rem;
+  color: var(--gold-light); letter-spacing: 0.07em;
+  grid-column: 1; grid-row: 1;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.status-icons { display: inline-flex; gap: 4px; font-size: 0.9rem; }
+.status-icon {
+  display: inline-flex; align-items: center; gap: 2px;
+  font-size: 0.6rem; padding: 1px 4px; border-radius: 8px;
+  border: 1px solid currentColor;
+}
+.status-icon.poison { color: var(--poison); }
+.status-icon.bleed  { color: var(--bleed); }
+.status-icon.buff   { color: var(--gold-light); }
+.status-icon.stun   { color: #b070d8; }
+
+.glory-hud {
+  font-family: 'Cinzel', serif; font-size: 0.72rem;
+  color: var(--gold-light); white-space: nowrap;
+  grid-column: 2; grid-row: 1 / 3;
+  display: flex; align-items: center; gap: 0.25rem;
+}
+.glory-hud b { color: #fff8d0; font-size: 0.92rem; }
+.bars-row { grid-column: 1; grid-row: 2; display: flex; gap: 0.45rem; }
+.bar-group { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.bar-lbl { font-size: 0.52rem; color: var(--parchment-dark); font-family:'Cinzel',serif; letter-spacing:.05em; text-transform:uppercase; margin-bottom: 1px; }
+.bar-bg { height: 7px; background: rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.12); border-radius:2px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; transition: width 0.35s ease; }
+.bar-hp { background: linear-gradient(90deg,#7a0000,#c0392b,#e74c3c); }
+.bar-sh { background: linear-gradient(90deg,#1a3a6a,#2980b9,#5dade2); }
+.bar-st { background: linear-gradient(90deg,#5a3a08,#c9922a,#f0c060); }
+.bar-nums { font-size:0.55rem; color:#9a8060; margin-top:1px; text-align:right; }
+
+#map-wrap {
+  flex: 1; overflow: hidden; position: relative;
+  background: #060401; touch-action: none;
+}
+#map-canvas {
+  display: block; image-rendering: pixelated;
+  position: absolute; top:0; left:0; transform-origin: top left;
+}
+#turn-counter {
+  position: absolute; top: 0.5rem; left: 0.5rem;
+  background: rgba(0,0,0,.55); padding: 0.25rem 0.55rem;
+  border: 1px solid var(--border); border-radius: 3px;
+  font-family: 'Cinzel', serif; font-size: 0.7rem; color: var(--gold-light);
+  pointer-events: none;
+}
+
+#armed-banner {
+  display: none;
+  position: absolute; top: 0.5rem; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(240,192,96,.95), rgba(201,146,42,.95));
+  color: #1a0e02;
+  padding: 0.35rem 0.9rem;
+  border-radius: 3px;
+  font-family: 'Cinzel', serif; font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 18px rgba(240,192,96,.6);
+  pointer-events: none;
+  z-index: 5;
+  animation: armedPulse 1.2s ease-in-out infinite;
+}
+#armed-banner.show { display: block; }
+
+#telegraph-banner {
+  display: none;
+  position: absolute; top: 2.4rem; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20,5,0,.85);
+  border: 1px solid #ff9040;
+  color: #ff9040;
+  padding: 0.25rem 0.7rem;
+  border-radius: 3px;
+  font-family: 'Cinzel', serif; font-size: 0.7rem;
+  letter-spacing: 0.04em; max-width: 90%;
+  text-align: center;
+  pointer-events: none; z-index: 5;
+  box-shadow: 0 0 12px rgba(255,144,64,.4);
+}
+#telegraph-banner.show { display: block; }
+#telegraph-banner.weak { border-color: #b070d8; color: #d4a0f0; box-shadow: 0 0 12px rgba(176,112,216,.4); }
+
+#bottom-panel {
+  background: linear-gradient(0deg, #080500 0%, #100900 100%);
+  border-top: 1.5px solid var(--gold);
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+  padding-bottom: var(--safe-b);
+}
+#log-strip {
+  font-size: 0.78rem; color: #c4a97a; font-style: italic;
+  padding: 0.28rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-height: 28px; flex-shrink: 0;
+}
+#tab-bar { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.tab-btn {
+  flex: 1; padding: 0.5rem 0.2rem; min-height: 44px;
+  font-family: 'Cinzel', serif; font-size: 0.6rem;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  color: #7a6040; background: none; border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, background 0.15s;
+}
+.tab-btn.active {
+  color: var(--gold-light);
+  border-bottom-color: var(--gold);
+  background: rgba(201,146,42,.06);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* MOVE TAB */
+#move-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; padding: 0.45rem 0.75rem 0.5rem;
+}
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 50px);
+  grid-template-rows: repeat(3, 50px);
+  gap: 4px; flex-shrink: 0;
+}
+.dp {
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(201,146,42,.12); border: 1.5px solid var(--gold);
+  border-radius: 6px; font-size: 1.25rem; color: var(--parchment);
+  cursor: pointer; min-width: 50px; min-height: 50px;
+  transition: background 0.08s, transform 0.06s;
+}
+.dp:active { background: rgba(201,146,42,.4); transform: scale(0.91); }
+.dp-mid { background: rgba(255,255,255,.04); border-color: var(--border); cursor:default; font-size:1rem; }
+
+.side-btns { display:flex; flex-direction:column; gap:0.3rem; flex:1; }
+.sb {
+  font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.04em;
+  text-transform:uppercase; padding:0.35rem 0.4rem;
+  border:1px solid var(--border); border-radius:4px;
+  background: rgba(255,255,255,.03); color:var(--parchment-dark);
+  cursor:pointer; min-height:38px;
+  display:flex; align-items:center; justify-content:center;
+  gap:0.25rem; text-align:center; line-height:1.2;
+}
+
+/* New action stack — replaces side-btns layout for inline combat */
+.action-stack {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 4px;
+  min-width: 0;
+}
+.action-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+.ab {
+  font-family:'Cinzel',serif; font-size: 0.62rem;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 0.3rem 0.2rem;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: rgba(255,255,255,.04); color: var(--parchment-dark);
+  cursor: pointer; min-height: 42px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; line-height: 1.1;
+}
+.ab > span:first-child { font-size: 0.95rem; }
+.ab .ab-lbl { font-size: 0.55rem; }
+.ab .ab-cost { font-size: 0.5rem; opacity: 0.7; color: var(--stam); }
+.ab:active:not(.off):not(.disabled) { background: rgba(201,146,42,.25); }
+.ab.armed {
+  border-color: var(--gold-light);
+  background: rgba(240,192,96,.28);
+  color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(240,192,96,.5) inset;
+  animation: armedPulse 1.2s ease-in-out infinite;
+}
+@keyframes armedPulse {
+  0%,100% { box-shadow: 0 0 12px rgba(240,192,96,.4) inset; }
+  50%     { box-shadow: 0 0 20px rgba(240,192,96,.7) inset; }
+}
+.ab.prim { background: rgba(201,146,42,.14); color: var(--parchment); border-color: rgba(201,146,42,.5); }
+.ab.def  { border-color: #5a8fb0; color: #a0c8e8; }
+.ab.def:active:not(.off) { background: rgba(90,143,176,.28); }
+.ab.special { border-color: #b070d8; color: #d4a0f0; }
+.ab.special:active:not(.off):not(.disabled) { background: rgba(176,112,216,.28); }
+.ab.special .ab-cost { color: #d4a0f0; }
+.ab.off, .ab.disabled { opacity: 0.3; pointer-events: none; }
+.ab.small { min-height: 34px; font-size: 0.58rem; padding: 0.25rem 0.2rem; }
+.ab.small > span:first-child { display: none; }
+
+/* Cancel-action indicator on the D-pad center */
+.dp-mid.armed-mode {
+  background: rgba(240,192,96,.3);
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+  cursor: pointer;
+}
+.sb:active { background: rgba(201,146,42,.22); color:var(--gold-light); }
+.sb.off { opacity:0.3; pointer-events:none; }
+.sb.scout { border-color: #5a8040; color: #8fc060; }
+
+/* GEAR */
+#gear-inner {
+  display: grid; grid-template-columns:1fr 1fr;
+  gap:0.5rem; padding:0.45rem 0.75rem 0.5rem;
+}
+.eq-card {
+  background:rgba(0,0,0,.35); border:1px solid rgba(201,146,42,.2);
+  border-radius:4px; padding:0.4rem 0.5rem;
+  display:flex; align-items:center; gap:0.45rem;
+}
+.eq-icon { font-size:1.35rem; line-height:1; }
+.eq-info { flex:1; min-width: 0; }
+.eq-name { font-size:0.7rem; color:var(--parchment); font-family:'Cinzel',serif; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.eq-stat { font-size:0.6rem; color:var(--gold-light); margin-top:2px; }
+
+/* BAG */
+#bag-inner { padding:0.45rem 0.75rem 0.5rem; }
+#inv-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+.inv-cell {
+  aspect-ratio:1; border-radius:4px;
+  background:rgba(0,0,0,.4); border:1px solid rgba(201,146,42,.18);
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.2rem; cursor:pointer; min-height:42px;
+  position:relative; transition:border-color 0.12s;
+}
+.inv-cell.full:active { border-color:var(--gold); background:rgba(201,146,42,.15); }
+.inv-cell.empty { opacity:0.22; cursor:default; }
+.inv-lbl {
+  position:absolute; bottom:1px; left:0; right:0;
+  text-align:center; font-size:0.42rem; color:#9a8060; font-family:'Cinzel',serif;
+  pointer-events:none; overflow:hidden; white-space:nowrap;
+}
+.bag-hint { font-size:0.62rem; color:#5a4828; text-align:center; margin-top:0.3rem; font-style:italic; }
+
+/* LOG */
+#log-inner { overflow-y:auto; max-height:128px; padding:0.4rem 0.75rem; }
+.le { font-size:0.76rem; line-height:1.45; padding:2px 0; border-bottom:1px solid rgba(255,255,255,.04); color:#c4a97a; }
+.le.player { color:#7ec8e3; }
+.le.enemy  { color:#e87070; }
+.le.loot   { color:#7de87a; }
+.le.info   { color:var(--gold-light); font-style:italic; }
+.le.boss   { color:#ff9040; font-weight:bold; }
+.le.crit   { color:#ffd060; font-weight:bold; }
+
+/* ═══ COMBAT SCREEN ═══ */
+#combat-screen {
+  display:none; position:fixed; inset:0; z-index:100;
+  background:rgba(4,2,0,.97);
+  flex-direction:column; align-items:center;
+  padding: 0 0.8rem;
+  padding-top: calc(0.5rem + var(--safe-t));
+  padding-bottom: calc(0.5rem + var(--safe-b));
+  overflow: hidden;
+}
+.arena {
+  display:flex; align-items:flex-end; justify-content:center;
+  gap:clamp(0.8rem, 5vw, 2rem);
+  flex-shrink:0; padding:0.2rem 0 0;
+}
+.fighter { display:flex; flex-direction:column; align-items:center; gap:0.3rem; flex: 1; max-width: 150px; }
+.f-sprite {
+  font-size:clamp(2.6rem,12vw,4rem); line-height:1;
+  filter:drop-shadow(0 0 10px rgba(255,160,80,.35));
+  position: relative;
+}
+.f-sprite.shake { animation:shake 0.35s ease; }
+.f-sprite.lunge { animation:lunge 0.35s ease; }
+.f-sprite.dodge { animation:dodge 0.4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px) rotate(-3deg)} 50%{transform:translateX(8px) rotate(2deg)} 80%{transform:translateX(-4px)} }
+@keyframes lunge { 0%{transform:translateX(0)} 40%{transform:translateX(22px) scale(1.1)} 100%{transform:translateX(0)} }
+@keyframes dodge { 0%{transform:translateX(0)} 30%{transform:translateY(-18px) translateX(-12px)} 100%{transform:translateY(0) translateX(0)} }
+.f-name { font-family:'Cinzel',serif; font-size:0.76rem; color:var(--gold-light); text-align:center; }
+.f-bars { width:100%; max-width: 130px; }
+.f-status { display:flex; gap:2px; justify-content:center; min-height: 14px; flex-wrap: wrap; margin-top: 1px; }
+.cbt-vs {
+  font-family:'Cinzel',serif; font-size:clamp(1.1rem,5vw,1.5rem);
+  color:var(--blood); text-shadow:0 0 20px var(--blood);
+  padding-bottom:1.5rem; flex-shrink:0;
+}
+
+/* Telegraph */
+#telegraph {
+  font-family:'Cinzel',serif; font-size:clamp(0.7rem,3vw,0.8rem);
+  color:#ff9040; text-align:center;
+  padding: 0.2rem 0.5rem; min-height: 1.4rem; flex-shrink: 0;
+  text-shadow: 0 0 12px rgba(255,144,64,0.5);
+  font-weight: 700; letter-spacing: 0.05em;
+}
+#telegraph.weak { color: #b070d8; }
+
+#cbt-msg {
+  font-style:italic; font-size:clamp(0.78rem,3.5vw,0.88rem);
+  color:#c4a97a; text-align:center;
+  min-height:2.4rem; max-height: 3.4rem; padding:0.2rem 0.3rem; line-height:1.45;
+  flex-shrink:0; max-width:380px; width:100%; overflow:hidden;
+}
+
+#cbt-btns {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:7px; width:100%; max-width:400px; flex-shrink:0;
+}
+.cb {
+  font-family:'Cinzel',serif; font-size:clamp(0.68rem,3.3vw,0.8rem);
+  letter-spacing:0.05em; text-transform:uppercase;
+  padding:0.65rem 0.35rem; border-radius:4px;
+  border:1.5px solid var(--gold);
+  background:rgba(201,146,42,.1); color:var(--parchment);
+  cursor:pointer; min-height:48px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  transition:background 0.1s, transform 0.07s, opacity 0.15s;
+  position: relative;
+}
+.cb-cost {
+  font-size: 0.5rem; color: var(--stam);
+  font-weight: 400; letter-spacing: 0;
+}
+.cb:active:not(:disabled) { background:rgba(201,146,42,.38); transform:scale(0.94); }
+.cb:disabled { opacity:0.3; pointer-events:none; }
+.cb.prim { background:rgba(201,146,42,.18); color:var(--gold-light); }
+.cb.danger { border-color:#8b3030; color:#ff9090; }
+.cb.danger:active:not(:disabled) { background:rgba(139,48,48,.35); }
+.cb.special { border-color:#b070d8; color:#d4a0f0; }
+
+.dmg-float {
+  position:fixed; pointer-events:none; z-index:150;
+  font-family:'Cinzel',serif; font-size:1.4rem; font-weight:700;
+  animation:floatUp 0.85s ease forwards;
+}
+.dmg-float.heal { color: #7de87a !important; }
+.dmg-float.miss { color: #b0b0b0 !important; font-style: italic; }
+@keyframes floatUp { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-52px) scale(1.3)} }
+
+/* ═══ POPUPS ═══ */
+.popup-base {
+  display:none; position:fixed;
+  bottom:0; left:0; right:0; z-index:300;
+  background:linear-gradient(180deg,#1a0e02,#0d0700);
+  border-top:2px solid var(--gold);
+  padding:1rem 1.2rem;
+  padding-bottom:calc(1rem + var(--safe-b));
+  transform:translateY(100%);
+  transition:transform 0.22s ease;
+}
+.popup-base.open { transform:translateY(0); }
+.pop-title { font-family:'Cinzel',serif; font-size:1rem; color:var(--gold-light); margin-bottom:0.25rem; }
+.pop-desc  { font-size:0.88rem; color:#c4a97a; font-style:italic; margin-bottom:0.75rem; line-height: 1.45; }
+.pop-btns  { display:flex; gap:0.5rem; }
+.pop-btn   { flex:1; font-family:'Cinzel',serif; font-size:0.78rem; padding:0.6rem 0.5rem;
+             border-radius:4px; border:1px solid var(--gold); background:rgba(201,146,42,.15);
+             color:var(--parchment); cursor:pointer; min-height:46px; }
+.pop-btn.cancel { border-color:var(--border); background:rgba(255,255,255,.04); color:#8a7050; }
+.pop-btn:active { background:rgba(201,146,42,.4); }
+
+/* ═══ END SCREEN ═══ */
+#end-screen {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(4,2,0,.97);
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:1.2rem 1.2rem;
+  padding-top:calc(1.2rem + var(--safe-t));
+  padding-bottom:calc(1.2rem + var(--safe-b));
+  gap:0.65rem; overflow-y:auto;
+}
+.end-title {
+  font-family:'Cinzel',serif; font-weight:900;
+  font-size:clamp(1.8rem,9vw,3.2rem); text-align:center; letter-spacing:0.1em;
+}
+.end-title.v { color:var(--gold-light); text-shadow:0 0 40px var(--gold); }
+.end-title.d { color:#c03030; text-shadow:0 0 40px #800000; }
+.end-glory-big {
+  font-family:'Cinzel',serif; text-align:center;
+  font-size:clamp(0.85rem,4vw,1.1rem); color:var(--parchment);
+}
+.end-glory-big span { color:var(--gold-light); font-size:clamp(1.6rem,7vw,2.2rem); display:block; margin-top:0.1rem; }
+.end-new-record {
+  font-family:'Cinzel',serif; font-size:0.85rem;
+  color:#ffd060; text-align:center; letter-spacing:0.1em;
+  text-transform: uppercase;
+  animation: recordPulse 1.2s ease-in-out infinite;
+}
+@keyframes recordPulse { 0%,100%{opacity:1;text-shadow:0 0 10px #c9922a} 50%{opacity:0.6;text-shadow:0 0 20px #f0c060} }
+.breakdown {
+  background:rgba(201,146,42,.07); border:1px solid rgba(201,146,42,.25);
+  padding:0.7rem 0.9rem; width:100%; max-width:340px;
+}
+.gl-row { display:flex; justify-content:space-between; font-size:0.82rem; padding:0.14rem 0; border-bottom:1px solid rgba(255,255,255,.05); color:#c4a97a; }
+.gl-row .v { color:var(--gold-light); }
+.gl-total { font-family:'Cinzel',serif; color:var(--gold-light); margin-top:0.2rem; font-size: 0.9rem; }
+.end-epitaph { font-style:italic; font-size:clamp(0.8rem,3.5vw,0.95rem); color:#8a7050; text-align:center; max-width:320px; }
+
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#3a2800; border-radius:2px; }
+
+/* Crit flash */
+.crit-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 90;
+  background: radial-gradient(circle, transparent 30%, rgba(255,200,80,0.25) 80%, transparent);
+  animation: critFlash 0.4s ease;
+}
+@keyframes critFlash { 0%{opacity:0} 30%{opacity:1} 100%{opacity:0} }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="title-screen">
+  <div class="t-emblem">⚔️</div>
+  <div class="t-title">SPEAR &amp; SHIELD</div>
+  <div class="t-sub">A Tale of Glory</div>
+  <p class="t-lore">The Greywood stirs. Wolves haunt ancient paths, goblins camp among ruins, and something old wakes in the dark. Death comes swiftly to the careless.</p>
+
+  <div class="title-stats" id="title-stats">
+    <div class="title-stats-label">⭐ Greatest Glory</div>
+    <div class="title-stats-val" id="hs-val">0</div>
+    <div class="title-stats-sub" id="hs-sub">No saga yet written</div>
+  </div>
+
+  <div class="diff-row" style="margin-bottom:0.5rem">
+    <button class="diff-btn active" data-class="warrior" onclick="setClass('warrior')">⚔ Warrior</button>
+    <button class="diff-btn" data-class="shaman" onclick="setClass('shaman')">🔮 Shaman</button>
+  </div>
+  <div class="diff-row">
+    <button class="diff-btn" data-diff="normal" onclick="setDiff('normal')">⚔ Normal</button>
+    <button class="diff-btn active" data-diff="hard" onclick="setDiff('hard')">💀 Hard</button>
+    <button class="diff-btn" data-diff="nightmare" onclick="setDiff('nightmare')">🔥 Nightmare</button>
+  </div>
+
+  <button class="btn-gold" id="btn-continue" onclick="continueGame()" style="display:none">▶ Continue Saga</button>
+  <button class="btn-gold" id="btn-newgame" onclick="startGame()">Begin New Journey</button>
+  <button class="btn-gold secondary" onclick="showCodex()" style="font-size:0.85rem;min-height:44px;padding:0.5rem 1.5rem">📜 Combat Codex</button>
+  <button class="btn-gold danger" id="btn-wipe" onclick="confirmWipe()" style="font-size:0.7rem;min-height:38px;padding:0.4rem 1rem;min-width:auto;display:none">Reset All Records</button>
+</div>
+
+<!-- GAME -->
+<div id="game-main">
+  <div id="hud">
+    <div class="hero-name">
+      <span>⚔ Aldric</span>
+      <span class="status-icons" id="status-icons"></span>
+    </div>
+    <div class="glory-hud">⭐ <b id="glory-val">0</b></div>
+    <div class="bars-row">
+      <div class="bar-group">
+        <div class="bar-lbl">HP</div>
+        <div class="bar-bg"><div class="bar-fill bar-hp" id="hp-bar" style="width:100%"></div></div>
+        <div class="bar-nums" id="hp-nums">100/100</div>
+      </div>
+      <div class="bar-group">
+        <div class="bar-lbl">Shield</div>
+        <div class="bar-bg"><div class="bar-fill bar-sh" id="sh-bar" style="width:100%"></div></div>
+        <div class="bar-nums" id="sh-nums">30/30</div>
+      </div>
+      <div class="bar-group">
+        <div class="bar-lbl">Stam</div>
+        <div class="bar-bg"><div class="bar-fill bar-st" id="st-bar" style="width:100%"></div></div>
+        <div class="bar-nums" id="st-nums">10/10</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="map-wrap">
+    <canvas id="map-canvas"></canvas>
+    <div id="turn-counter">Turn 1</div>
+    <div id="armed-banner"></div>
+    <div id="telegraph-banner"></div>
+  </div>
+
+  <div id="bottom-panel">
+    <div id="log-strip">Aldric enters the Greywood...</div>
+    <div id="tab-bar">
+      <button class="tab-btn active" id="tb-move" onclick="switchTab('move')">🗺 Move</button>
+      <button class="tab-btn" id="tb-gear" onclick="switchTab('gear')">⚔ Gear</button>
+      <button class="tab-btn" id="tb-bag"  onclick="switchTab('bag')">🎒 Bag</button>
+      <button class="tab-btn" id="tb-log"  onclick="switchTab('log')">📜 Log</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-move">
+      <div id="move-inner">
+        <div class="dpad">
+          <div></div>
+          <button class="dp" ontouchstart="dp(0,-1)" onmousedown="dp(0,-1)">▲</button>
+          <div></div>
+          <button class="dp" ontouchstart="dp(-1,0)" onmousedown="dp(-1,0)">◀</button>
+          <button class="dp dp-mid" id="dp-cancel" onclick="cancelAction()">✦</button>
+          <button class="dp" ontouchstart="dp(1,0)"  onmousedown="dp(1,0)">▶</button>
+          <div></div>
+          <button class="dp" ontouchstart="dp(0,1)"  onmousedown="dp(0,1)">▼</button>
+          <div></div>
+        </div>
+        <div class="action-stack">
+          <div class="action-row">
+            <button class="ab prim" id="ab-thrust" onclick="armAction('thrust')" title="Thrust adjacent foe">
+              <span>🗡️</span><span class="ab-lbl">Thrust</span><span class="ab-cost">2🟡</span>
+            </button>
+            <button class="ab" id="ab-bash" onclick="armAction('bash')" title="Stun adjacent foe">
+              <span>🛡️</span><span class="ab-lbl">Bash</span><span class="ab-cost">3🟡</span>
+            </button>
+            <button class="ab" id="ab-feint" onclick="armAction('feint')" title="Set up next crit">
+              <span>✦</span><span class="ab-lbl">Feint</span><span class="ab-cost">2🟡</span>
+            </button>
+          </div>
+          <div class="action-row">
+            <button class="ab def" id="ab-brace" onclick="doBrace()" title="Block 85%, regen stam">
+              <span>🛡</span><span class="ab-lbl">Brace</span><span class="ab-cost">free</span>
+            </button>
+            <button class="ab" id="ab-sprint" onclick="armAction('sprint')" title="Dash 2 tiles">
+              <span>💨</span><span class="ab-lbl">Sprint</span><span class="ab-cost">3🟡</span>
+            </button>
+            <button class="ab" id="ab-wait" onclick="doWait()" title="Pass turn, regen stam">
+              <span>⏸</span><span class="ab-lbl">Wait</span><span class="ab-cost">free</span>
+            </button>
+          </div>
+          <div class="action-row">
+            <button class="ab small" id="ab-rest" onclick="doRest()" title="Rest deeply">🔥 Rest</button>
+            <button class="ab small" id="ab-scout" onclick="doScout()" title="Reveal foes">👁 Scout</button>
+            <button class="ab small" id="ab-potion" onclick="quickPotion()" title="Use a potion">🧪 Potion</button>
+          </div>
+          <div class="action-row" id="ab-row-spirit" style="display:none">
+            <button class="ab small" id="ab-realm" onclick="toggleRealm()" title="Toggle spirit realm">🌀 Realm</button>
+            <button class="ab small" id="ab-spirits" onclick="showSpiritsPopup()" title="View bound spirits">🔮 Spirits</button>
+            <button class="ab small" id="ab-subdue" onclick="armAction('subdue')" title="Subdue a weakened spirit">✨ Subdue</button>
+          </div>
+          <div class="action-row" id="ab-row-spells" style="display:none">
+            <button class="ab small special" id="ab-spell-1" onclick="castSpellSlot(0)" title="Cast spell 1"></button>
+            <button class="ab small special" id="ab-spell-2" onclick="castSpellSlot(1)" title="Cast spell 2"></button>
+            <button class="ab small special" id="ab-spell-3" onclick="castSpellSlot(2)" title="Cast spell 3"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-gear">
+      <div id="gear-inner">
+        <div class="eq-card">
+          <div class="eq-icon" id="eq-wi">🗡️</div>
+          <div class="eq-info">
+            <div class="eq-name" id="eq-wn">Iron Spear</div>
+            <div class="eq-stat" id="eq-ws">ATK 12</div>
+          </div>
+        </div>
+        <div class="eq-card">
+          <div class="eq-icon" id="eq-si">🛡️</div>
+          <div class="eq-info">
+            <div class="eq-name" id="eq-sn">Wooden Shield</div>
+            <div class="eq-stat" id="eq-ss">Block 30</div>
+          </div>
+        </div>
+        <div class="eq-card" style="grid-column:1/-1">
+          <div class="eq-icon" id="eq-ai">🧵</div>
+          <div class="eq-info">
+            <div class="eq-name" id="eq-an">No armor</div>
+            <div class="eq-stat" id="eq-as">DEF 0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-bag">
+      <div id="bag-inner">
+        <div id="inv-grid"></div>
+        <div class="bag-hint">Tap an item to use or sell it</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-log">
+      <div id="log-inner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ITEM POPUP -->
+<div id="item-popup" class="popup-base">
+  <div class="pop-title" id="pop-title">Item</div>
+  <div class="pop-desc"  id="pop-desc">Description</div>
+  <div class="pop-btns">
+    <button class="pop-btn" onclick="confirmItem()" id="pop-confirm">Use</button>
+    <button class="pop-btn" onclick="destroyItem()" id="pop-destroy" style="border-color:#8b3030;color:#ff9090;background:rgba(139,48,48,.15);flex:0.7">🗑 Destroy</button>
+    <button class="pop-btn cancel" onclick="closePopup()">Cancel</button>
+  </div>
+</div>
+
+<!-- CODEX POPUP -->
+<div id="codex-popup" class="popup-base" style="max-height: 70vh; overflow-y: auto;">
+  <div class="pop-title">📜 Combat Codex</div>
+  <div class="pop-desc" style="margin-bottom: 0.4rem">Combat happens on the map. Tap an action, then a direction.</div>
+  <div style="font-size:0.78rem; line-height:1.55; color:#c4a97a; margin-bottom: 0.8rem;">
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🎯 Two-tap combat</b> — Tap 🗡️ Thrust / 🛡 Bash / ✦ Feint / 💨 Sprint to <i>arm</i> it (button glows gold; the four neighbor tiles light up). Then tap a direction on the D-pad to commit. Tap the ✦ center to cancel.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🚶 Walking into a foe is blocked</b> — Use Thrust or Bash to attack a tile.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">⏳ Turn-based</b> — Every action (move, attack, brace, wait) ends your turn. Enemies then move and attack. Adjacent enemies <i>telegraph</i> their next strike (red pulsing border + text banner) — Brace the heavy ones.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">⚔ Weapon Traits</b>:</p>
+    <p style="margin-bottom:0.3rem; padding-left:0.7rem; font-size:0.74rem">
+      🗡️ <b>Spear (pierce)</b> — Ignores 50% enemy DEF.<br>
+      ⚔️ <b>Sword (balanced)</b> — +1 bonus damage per hit.<br>
+      🔨 <b>Mace (crush)</b> — Ignores 30% DEF; bonus stun on bash and small stun on thrust.<br>
+      🪓 <b>Axe (cleave, 2H)</b> — Inflicts Bleed on hit.<br>
+      ⚡ <b>Greatsword (sweep, 2H)</b> — +25% damage per status on the foe.
+    </p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🛡 Brace</b> — Free action; +shield, +4 stam, blocks 85% of next hit. <b>⏸ Wait</b> — free; +3 stam, do nothing.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">✦ Feint</b> — Next Thrust crits guaranteed.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">💨 Sprint</b> — Dash 2 tiles (3 stam). Loud — enemies get an extra turn. Can't sprint while bleeding.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🔥 Rest / 👁 Scout</b> — Rest deeply restores HP+stam (passes 2 turns; can't with enemies adjacent). Scout reveals foes beyond your sight (1 stam).</p>
+    <p style="margin-bottom:0.4rem"><b style="color:#ff9040">⚠ Enemies hunt</b> — Wolves prowl forests, goblins guard camps, shamans keep distance, alpha rallies the pack.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--poison)">☠ Poison</b> 4 HP/turn · <b style="color:var(--bleed)">🩸 Bleed</b> 3 HP/turn, no shield regen, no sprint.</p>
+    <p style="margin-bottom:0.4rem;margin-top:0.6rem;border-top:1px solid rgba(201,146,42,.3);padding-top:0.5rem"><b style="color:#b070d8">🔮 SHAMAN & SPIRIT REALM</b></p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">✨ Starting Familiar</b> — Shaman begins with one random familiar spirit bound, granting an active spell:</p>
+    <p style="margin-bottom:0.3rem; padding-left:0.7rem; font-size:0.74rem">
+      🔥 <b>Fire Bolt</b> (Ember Wisp) — 4-tile ranged spell, 10-16 dmg. 3 stam, CD 2.<br>
+      🛡 <b>Ward</b> (Guardian Wisp) — +18 shield instant. 3 stam, CD 3.<br>
+      💚 <b>Mend</b> (Mending Wisp) — Heal 20 HP. 3 stam, CD 3.
+    </p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">Spells</b> appear as purple buttons. Bolts arm directionally — tap, then choose direction. Ward & Mend cast on yourself instantly.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">🌀 Realm</b> — Shaman starts with Spirit Vision. Tap 🌀 Realm to cross over. The world dims and spirits become solid. Living enemies fade out; chests can't be opened.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">🪄 Spirit weapons</b> — Ritual Staff (start) or Spirit Staff. Deal 2× damage to spirits, half to flesh. Mortal weapons do half damage to spirits.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">✨ Subdue</b> — When a spirit drops to ≤30% HP (marked ✨), arm Subdue and tap its direction. It binds to one of your 4 slots, granting its power.</p>
+    <p style="margin-bottom:0.3rem; padding-left:0.7rem; font-size:0.74rem">
+      🐾 <b>Pack Hunt</b> (Wolf) — Thrust costs -1 stamina.<br>
+      👁 <b>Cunning</b> (Goblin) — +10% crit.<br>
+      ☠ <b>Hex Touch</b> (Shaman) — Thrusts apply Poison.<br>
+      ⚔ <b>War Cry</b> (Warchief) — +4 ATK above 50% HP.<br>
+      🩸 <b>Trollblood</b> (Troll Shade) — Regen 2 HP/turn.
+    </p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">☠ Death as Spirit</b> — A Shaman who falls becomes a ghost (1 chance only). Hunt and bind a spirit to be reborn — or be lost forever.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:#d4a0f0">✨ Spirit Dust / Scrolls</b> — Warriors can find these to gain temporary or permanent Spirit Vision. Scrolls also unlock 2 spirit slots.</p>
+  </div>
+  <div class="pop-btns">
+    <button class="pop-btn" onclick="closePopup()">Got it</button>
+  </div>
+</div>
+
+<!-- CONFIRM WIPE -->
+<div id="wipe-popup" class="popup-base">
+  <div class="pop-title">Reset All Records?</div>
+  <div class="pop-desc">This will erase your high score, completion stats, and any saved game. This cannot be undone.</div>
+  <div class="pop-btns">
+    <button class="pop-btn" style="border-color:#8b3030;color:#ff9090;background:rgba(139,48,48,.2)" onclick="wipeAll()">Erase Forever</button>
+    <button class="pop-btn cancel" onclick="closePopup()">Cancel</button>
+  </div>
+</div>
+
+<!-- SPIRITS -->
+<div id="spirits-popup" class="popup-base" style="max-height:70vh;overflow-y:auto">
+  <div class="pop-title">🔮 Bound Spirits</div>
+  <div class="pop-desc" id="spirits-slot-count">0 / 0 bound</div>
+  <div id="spirits-list" style="margin-bottom:0.8rem"></div>
+  <div class="pop-btns">
+    <button class="pop-btn" onclick="closePopup()">Close</button>
+  </div>
+</div>
+
+<div id="scrim" style="display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.4)" onclick="closePopup()"></div>
+
+<!-- END -->
+<div id="end-screen">
+  <div class="end-title" id="end-title">VICTORY</div>
+  <div class="end-new-record" id="end-record" style="display:none">⭐ NEW HIGHEST GLORY ⭐</div>
+  <div class="end-glory-big">Total Glory<span id="end-glory">0</span></div>
+  <div class="breakdown" id="breakdown"></div>
+  <div class="end-epitaph" id="end-epitaph"></div>
+  <button class="btn-gold" onclick="goToTitle()">▶ Return to Title</button>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  CONSTANTS & DATA
+// ════════════════════════════════════════
+const TILE=28, MW=40, MH=30;
+const T={DEEP:0,SHALLOW:1,SAND:2,GRASS:3,DGRASS:4,FOREST:5,DFOREST:6,STONE:7,CAMP:8,CAVE:9,WALL:10};
+const TCOL=['#1a3a6a','#2a5aa0','#c8b560','#4a8a30','#2d6020','#1e4a12','#122e08','#6a6058','#8b6040','#4a3828','#3a3230'];
+const SAVE_KEY = 'spearShield_v3';
+
+const DIFFICULTY = {
+  normal:    { name:'Normal',    enemyAtkMult:1.0, enemyHpMult:1.0, lootChance:0.8, gloryMult:1.0 },
+  hard:      { name:'Hard',      enemyAtkMult:1.25,enemyHpMult:1.2, lootChance:0.6, gloryMult:1.3 },
+  nightmare: { name:'Nightmare', enemyAtkMult:1.6, enemyHpMult:1.4, lootChance:0.45,gloryMult:1.8 },
+};
+
+const CLASSES = {
+  warrior: {
+    name: 'Warrior',
+    icon: '⚔',
+    hp: 100, stam: 10, atk: 12, shield: 30,
+    weapon: 'iron_spear', shieldItem: 'wooden_shield', armor: 'leather_armor',
+    startInv: ['healing_potion','iron_ration','antidote'],
+    spiritVision: false,
+    spiritSlots: 0,
+    desc: 'Steel and shield. No spirit sight, but hits hardest.',
+  },
+  shaman: {
+    name: 'Shaman',
+    icon: '🔮',
+    hp: 95, stam: 14, atk: 11, shield: 25,
+    weapon: 'ritual_staff', shieldItem: null, armor: 'spirit_robes',
+    startInv: ['healing_potion','healing_potion','spirit_dust','antidote'],
+    spiritVision: true,
+    spiritSlots: 4,
+    desc: 'Sees the spirit realm. Subdues and binds spirits to gain powers.',
+  },
+};
+
+// SPIRITS — each enemy has a corresponding spirit form
+const SPIRITS = {
+  wolf:     { name:'Wolf Spirit',         icon:'👻', hp:25, atk:8,  glory:15, power:'pack_hunt',  desc:'Each Thrust costs -1 stamina.' },
+  wolf2:    { name:'Alpha Spirit',        icon:'👻', hp:40, atk:11, glory:25, power:'howl',       desc:'Adjacent enemies are stunned at battle start.' },
+  goblin:   { name:'Goblin Echo',         icon:'👻', hp:30, atk:10, glory:18, power:'cunning',    desc:'+10% crit chance on all attacks.' },
+  goblin2:  { name:'Shaman Wraith',       icon:'💀', hp:28, atk:14, glory:30, power:'hex',        desc:'Your Thrusts apply Poison.' },
+  goblin3:  { name:'Warchief Phantom',    icon:'💀', hp:55, atk:15, glory:50, power:'warcry',     desc:'+4 ATK while above half HP.' },
+  troll:    { name:'Grumrak\'s Shade',    icon:'💀', hp:130, atk:22, glory:150, power:'regen',    desc:'Regenerate 2 HP per turn.', boss:true },
+  // ── FAMILIAR SPIRITS (Shaman starting options) ──
+  ember_wisp:   { name:'Ember Wisp',     icon:'🔥', hp:1, atk:0, glory:0, power:'bolt',  desc:'Spell: Fire Bolt — ranged damage.', familiar:true },
+  guardian_wisp:{ name:'Guardian Wisp',  icon:'🛡', hp:1, atk:0, glory:0, power:'ward',  desc:'Spell: Ward — restore shield.',    familiar:true },
+  mending_wisp: { name:'Mending Wisp',   icon:'💚', hp:1, atk:0, glory:0, power:'mend',  desc:'Spell: Mend — heal HP.',           familiar:true },
+};
+
+// SPIRIT POWERS — applied when bound
+const SPIRIT_POWERS = {
+  pack_hunt: { name:'Pack Hunt',  icon:'🐾', desc:'Thrust costs -1 stamina', apply:(p)=>{ p.stamModWeapon = Math.max(-1, (p.stamModWeapon||0) - 1); } },
+  howl:      { name:'Spirit Howl',icon:'🌀', desc:'Adjacent foes stunned at combat start', oneshot:true },
+  cunning:   { name:'Cunning',    icon:'👁', desc:'+10% crit', apply:(p)=>{ p.weaponCrit = (p.weaponCrit||0.15) + 0.1; } },
+  hex:       { name:'Hex Touch',  icon:'☠', desc:'Thrusts apply Poison', flag:'hexTouch' },
+  warcry:    { name:'War Cry',    icon:'⚔', desc:'+4 ATK above 50% HP', flag:'warcry' },
+  regen:     { name:'Trollblood', icon:'🩸', desc:'Regen 2 HP/turn', apply:(p)=>{ p.regenPerTurn = (p.regenPerTurn||0) + 2; } },
+  // Active spells — castable from the action bar
+  bolt: {
+    name:'Fire Bolt', icon:'🔥',
+    desc:'Ranged spell: 4-tile bolt, hits first foe in line. 3 stamina, 2-turn cooldown.',
+    spell: { kind:'bolt', stam:3, cd:2, range:4, dmg:[10,16] },
+  },
+  ward: {
+    name:'Ward',      icon:'🛡',
+    desc:'Restore 18 shield instantly. 3 stamina, 3-turn cooldown.',
+    spell: { kind:'ward', stam:3, cd:3, shield:18 },
+  },
+  mend: {
+    name:'Mend',      icon:'💚',
+    desc:'Heal 20 HP. 3 stamina, 3-turn cooldown.',
+    spell: { kind:'mend', stam:3, cd:3, hp:20 },
+  },
+};
+
+const ITEMS={
+  // ── WEAPONS (one-handed) ──
+  iron_spear:       {name:'Iron Spear',      icon:'🗡️',type:'weapon', hands:1, atk:12, crit:0.15, stamMod:0, trait:'pierce',     desc:'ATK 12 · Pierces armor. Reliable starter spear.'},
+  ritual_staff:     {name:'Ritual Staff',    icon:'🪄',type:'weapon', hands:1, atk:11, crit:0.20, stamMod:0, trait:'spirit',     desc:'ATK 11 · Channels spirit power. Bonus damage in spirit realm.'},
+  spirit_staff:     {name:'Spirit Staff',    icon:'🔮',type:'weapon', hands:1, atk:14, crit:0.22, stamMod:0, trait:'spirit',     desc:'ATK 14 · Greater spirit weapon. Double damage on spirits.'},
+  steel_spear:      {name:'Steel Spear',     icon:'🔱',type:'weapon', hands:1, atk:20, crit:0.20, stamMod:0, trait:'pierce',     desc:'ATK 20 · Crit +5%. Pierces armor. Finely forged.'},
+  troll_bone_spear: {name:'Trollbone Spear', icon:'🔱',type:'weapon', hands:1, atk:26, crit:0.18, stamMod:0, trait:'pierce',     desc:'ATK 26 · Pierces armor. Carved from cave bones.'},
+  short_sword:      {name:'Short Sword',     icon:'⚔️',type:'weapon', hands:1, atk:14, crit:0.18, stamMod:0, trait:'balanced',   desc:'ATK 14 · Quick and balanced. No stamina penalty.'},
+  longsword:        {name:'Longsword',       icon:'⚔️',type:'weapon', hands:1, atk:22, crit:0.20, stamMod:0, trait:'balanced',   desc:'ATK 22 · Crit +5%. Knight\'s blade.'},
+  mace:             {name:'Iron Mace',       icon:'🔨',type:'weapon', hands:1, atk:18, crit:0.10, stamMod:0, trait:'crush',      desc:'ATK 18 · Crush: +20% stun chance on Bash.'},
+  warhammer:        {name:'Warhammer',       icon:'🔨',type:'weapon', hands:1, atk:24, crit:0.10, stamMod:0, trait:'crush',      desc:'ATK 24 · Crush: bonus stun chance, +ignore armor.'},
+  // ── WEAPONS (two-handed — no shield!) ──
+  two_handed_axe:   {name:'Two-Handed Axe',  icon:'🪓',type:'weapon', hands:2, atk:32, crit:0.15, stamMod:1, trait:'cleave',      desc:'ATK 32 · Two-handed. +1 stam cost. Cleave: bleed on hit.'},
+  great_axe:        {name:'Greataxe of Ruin',icon:'🪓',type:'weapon', hands:2, atk:42, crit:0.22, stamMod:1, trait:'cleave',      desc:'ATK 42 · Two-handed. Crit +7%. Cleave: bleed.'},
+  greatsword:       {name:'Greatsword',      icon:'🗡️',type:'weapon', hands:2, atk:36, crit:0.20, stamMod:1, trait:'sweep',       desc:'ATK 36 · Two-handed. Sweep: thrust hits all statuses.'},
+
+  // ── SHIELDS (used only with 1H weapons) ──
+  wooden_shield:    {name:'Wooden Shield',   icon:'🛡️',type:'shield', def:0, shieldMax:30, desc:'Block 30 · Light wood'},
+  reinforced_shield:{name:'Iron Shield',     icon:'🛡️',type:'shield', def:0, shieldMax:50, desc:'Block 50 · Solid iron'},
+  tower_shield:     {name:'Tower Shield',    icon:'🛡️',type:'shield', def:0, shieldMax:80, stamMod:1, desc:'Block 80 · Heavy. Bash/Brace cost +1 stam.'},
+  kite_shield:      {name:'Kite Shield',     icon:'🛡️',type:'shield', def:0, shieldMax:60, dodge:0.10, desc:'Block 60 · Curved · 10% dodge chance.'},
+
+  // ── ARMOR ──
+  leather_armor:    {name:'Leather Armor',   icon:'🧥',type:'armor',  def:4,  stamMod:0,  desc:'DEF 4 · Light. No stamina penalty.'},
+  spirit_robes:     {name:'Spirit Robes',    icon:'🧿',type:'armor',  def:3,  stamMod:-1, spiritVision:true, desc:'DEF 3 · Grants Spirit Vision. -1 stam to defend.'},
+  chain_mail:       {name:'Chain Mail',      icon:'🦺',type:'armor',  def:9,  stamMod:0,  desc:'DEF 9 · Sturdy iron rings.'},
+  scale_armor:      {name:'Scale Armor',     icon:'🦺',type:'armor',  def:13, stamMod:0,  desc:'DEF 13 · Overlapping plates.'},
+  plate_armor:      {name:'Plate Armor',     icon:'🛡️',type:'armor',  def:18, stamMod:1,  desc:'DEF 18 · Heavy. Bash/Brace cost +1 stam.'},
+  cloak_of_shadows: {name:'Cloak of Shadows',icon:'🧣',type:'armor',  def:3,  stamMod:-1, dodge:0.15, regen:1, desc:'DEF 3 · Light · 15% dodge · Saves 1 stam · Regen 1 HP/turn.'},
+  berserker_garb:   {name:'Berserker Garb',  icon:'🩸',type:'armor',  def:6,  stamMod:0,  bloodlust:true, desc:'DEF 6 · +30% damage when below half HP.'},
+
+  // ── CONSUMABLES ──
+  healing_potion:   {name:'Healing Potion',  icon:'🧪',type:'consumable',hp:35,                desc:'Restores 35 HP'},
+  greater_potion:   {name:'Greater Potion',  icon:'💊',type:'consumable',hp:60,                desc:'Restores 60 HP'},
+  elixir_of_life:   {name:'Elixir of Life',  icon:'🌟',type:'consumable',hp:100,stam:99,       desc:'Full restore: 100 HP and full stamina'},
+  iron_ration:      {name:'Iron Ration',     icon:'🍖',type:'consumable',hp:15, stam:4,        desc:'Restores 15 HP and 4 stamina'},
+  berserker_root:   {name:'Berserker Root',  icon:'🌿',type:'consumable',atkBuff:8,dur:4,      desc:'ATK +8 for 4 turns'},
+  antidote:         {name:'Antidote',        icon:'🍶',type:'consumable',cure:['poison','bleed'], desc:'Removes Poison and Bleed'},
+  whetstone:        {name:'Whetstone',       icon:'🪨',type:'consumable',sharpen:5,dur:6,      desc:'Weapon +5 ATK for 6 turns'},
+  stamina_draught:  {name:'Stamina Draught', icon:'⚗️',type:'consumable',stam:99,              desc:'Restores full stamina'},
+  smoke_bomb:       {name:'Smoke Bomb',      icon:'💨',type:'consumable',escape:true,          desc:'Guaranteed flee from any non-boss fight'},
+  blessed_water:    {name:'Blessed Water',   icon:'💧',type:'consumable',hp:25,defBuff:6,dur:5,desc:'+25 HP and DEF +6 for 5 turns'},
+  spirit_dust:      {name:'Spirit Dust',     icon:'✨',type:'consumable',spiritVision:5,       desc:'Grants Spirit Vision for 5 turns'},
+  spirit_vision_scroll: {name:'Spirit Vision Scroll', icon:'📜',type:'consumable',spiritVisionPerm:true, desc:'Permanently grants Spirit Vision'},
+  ghost_offering:   {name:'Ghost Offering',  icon:'🕯️',type:'consumable',weakenSpirit:0.3,    desc:'Weakens nearest spirit by 30%, easier to subdue'},
+
+  // ── TROPHIES ──
+  wolf_pelt:        {name:'Wolf Pelt',       icon:'🐾',type:'trophy',   glory:10,              desc:'Trophy · Sell for 10 glory'},
+  goblin_ear:       {name:'Goblin Ear',      icon:'👂',type:'trophy',   glory:8,               desc:'Trophy · Sell for 8 glory'},
+  alpha_fang:       {name:'Alpha Fang',      icon:'🦷',type:'trophy',   glory:25,              desc:'Trophy · Sell for 25 glory'},
+  warchief_skull:   {name:'Warchief Skull',  icon:'💀',type:'trophy',   glory:50,              desc:'Trophy · Sell for 50 glory'},
+  ancient_relic:    {name:'Ancient Relic',   icon:'🗿',type:'trophy',   glory:40,              desc:'Trophy · Sell for 40 glory'},
+  troll_heart:      {name:'Troll Heart',     icon:'❤️‍🩹',type:'trophy', glory:80,              desc:'Trophy · Sell for 80 glory'},
+  gold_coins:       {name:'Gold Coins',      icon:'🪙',type:'trophy',   glory:15,              desc:'Trophy · Sell for 15 glory'},
+  gem:              {name:'Ruby',            icon:'💎',type:'trophy',   glory:35,              desc:'Trophy · Sell for 35 glory'},
+};
+
+// Each enemy has a moveset with telegraphed attacks
+function mkEnemy(type,x,y){
+  const D={
+    wolf: {
+      name:'Forest Wolf', icon:'🐺', hp:32, atk:11, def:2, glory:22,
+      loot:['wolf_pelt','iron_ration',null,'gold_coins'],
+      ai: { sight:4, speed:1, aggro:'hunt', wander:true, territory:null },
+      moves:[
+        { id:'snap',  name:'Snap',         dmgMult:1.0, weight:50, telegraph:'The wolf snarls, baring fangs...' },
+        { id:'lunge', name:'Lunge',        dmgMult:1.4, weight:30, telegraph:'⚠ The wolf coils to lunge!', heavy:true },
+        { id:'rend',  name:'Rend',         dmgMult:0.7, weight:20, telegraph:'The wolf circles, going for your legs...', inflict:'bleed' },
+      ]
+    },
+    wolf2: {
+      name:'Pack Leader', icon:'🐺', hp:55, atk:14, def:3, glory:35,
+      loot:['wolf_pelt','alpha_fang','healing_potion'],
+      ai: { sight:5, speed:1, aggro:'hunt', wander:true, territory:null, calls:true },
+      moves:[
+        { id:'snap',  name:'Snap',     dmgMult:1.0, weight:35, telegraph:'The alpha bares its fangs...' },
+        { id:'lunge', name:'Throat Bite', dmgMult:1.6, weight:30, telegraph:'⚠ The alpha goes for your throat!', heavy:true },
+        { id:'howl',  name:'Howl',     dmgMult:0,   weight:15, telegraph:'The alpha throws back its head — a howl is coming...', selfBuff:'enrage' },
+        { id:'rend',  name:'Hamstring',dmgMult:0.8, weight:20, telegraph:'The alpha circles low...', inflict:'bleed' },
+      ]
+    },
+    goblin: {
+      name:'Goblin Raider', icon:'👺', hp:42, atk:13, def:4, glory:28,
+      loot:['goblin_ear','iron_ration',null],
+      ai: { sight:5, speed:1, aggro:'guard', wander:false, territory:'camp' },
+      moves:[
+        { id:'jab',   name:'Spear Jab',  dmgMult:1.0, weight:50, telegraph:'The goblin readies its spear...' },
+        { id:'wild',  name:'Wild Swing', dmgMult:1.5, weight:25, telegraph:'⚠ The goblin winds up for a big swing!', heavy:true, missChance:0.2 },
+        { id:'kick',  name:'Dirty Kick', dmgMult:0.6, weight:25, telegraph:'The goblin grins viciously...', inflict:'stun', stunChance:0.4 },
+      ]
+    },
+    goblin2: {
+      name:'Goblin Shaman', icon:'🧟', hp:38, atk:16, def:2, glory:42,
+      loot:['goblin_ear','healing_potion','antidote'],
+      ai: { sight:6, speed:1, aggro:'keep_distance', wander:false, territory:'camp', preferredDist:3 },
+      moves:[
+        { id:'curse', name:'Hex',        dmgMult:0.8, weight:30, telegraph:'The shaman chants a curse...', inflict:'poison' },
+        { id:'bolt',  name:'Dark Bolt',  dmgMult:1.3, weight:35, telegraph:'⚠ The shaman gathers dark energy!', heavy:true, ignoreShield:true },
+        { id:'heal',  name:'Foul Drink', dmgMult:0,   weight:15, telegraph:'The shaman raises a vial...', heal:0.25 },
+        { id:'jab',   name:'Staff Jab',  dmgMult:0.7, weight:20, telegraph:'The shaman jabs with its staff...' },
+      ]
+    },
+    goblin3: {
+      name:'Goblin Warchief', icon:'👹', hp:78, atk:19, def:7, glory:75,
+      loot:['goblin_ear','warchief_skull','steel_spear',null],
+      ai: { sight:7, speed:1, aggro:'guard', wander:false, territory:'camp' },
+      moves:[
+        { id:'cleave', name:'Cleave',    dmgMult:1.1, weight:35, telegraph:'The warchief raises his axe...' },
+        { id:'crush',  name:'Crushing Blow', dmgMult:1.7, weight:25, telegraph:'⚠ The warchief lifts the axe high overhead!', heavy:true },
+        { id:'rally',  name:'War Cry',   dmgMult:0,   weight:15, telegraph:'The warchief inhales for a war cry...', selfBuff:'enrage' },
+        { id:'shove',  name:'Shield Shove', dmgMult:0.5, weight:25, telegraph:'The warchief charges shield-first...', inflict:'stun', stunChance:0.5 },
+      ]
+    },
+    troll: {
+      name:'Grumrak the Troll', icon:'🧌', hp:220, atk:28, def:11, glory:240,
+      loot:['ancient_relic','troll_heart','greater_potion','troll_bone_spear'],
+      regen:6, boss:true,
+      ai: { sight:99, speed:1, aggro:'guard', wander:false, territory:'cave' },
+      moves:[
+        { id:'club',     name:'Club Strike',  dmgMult:1.0, weight:30, telegraph:'Grumrak hefts his club...' },
+        { id:'smash',    name:'Club SMASH',   dmgMult:1.9, weight:25, telegraph:'⚠ Grumrak raises his club to the sky — devastation is coming!', heavy:true, ignoreShield:true },
+        { id:'sweep',    name:'Wide Sweep',   dmgMult:1.2, weight:20, telegraph:'⚠ Grumrak draws back the club for a wide sweep!', heavy:true, inflict:'stun', stunChance:0.5 },
+        { id:'roar',     name:'Terrifying Roar', dmgMult:0, weight:10, telegraph:'Grumrak bellows from the depths...', selfBuff:'enrage' },
+        { id:'feast',    name:'Bite & Devour', dmgMult:0.9, weight:15, telegraph:'Grumrak gnashes its yellow teeth...', heal:0.1, inflict:'bleed' },
+      ]
+    },
+  };
+  const d=D[type];
+  const diff = DIFFICULTY[G.difficulty || 'hard'];
+  return {
+    ...d, type, x, y,
+    homeX: x, homeY: y,
+    maxHp: Math.floor(d.hp * diff.enemyHpMult),
+    hp:    Math.floor(d.hp * diff.enemyHpMult),
+    atk:   Math.floor(d.atk * diff.enemyAtkMult),
+    alive:true,
+    nextMove: null,
+    statuses: {},
+    aiState: 'idle',  // idle | chasing | returning
+    lastSeen: null,
+  };
+}
+
+const CHEST_POS=[
+  // Forest zone
+  [17, 5],   // light loot near entrance
+  [24, 9],
+  [19, 12],
+  [29, 3],
+  [33, 8],
+  [16, 11],
+  // Camp zone
+  [26, 16],
+  [30, 19],
+  [37, 20],
+  [34, 14],
+  // Pre-cave / cave
+  [25, 24],
+  [35, 25],
+  [38, 28],
+];
+const CHEST_ITEMS=[
+  // Forest chests — early game gear
+  ['healing_potion','whetstone','gold_coins'],
+  ['iron_ration','leather_armor','antidote','spirit_dust'],
+  ['short_sword','healing_potion'],
+  ['mace','iron_ration','spirit_dust'],
+  ['chain_mail','stamina_draught','gold_coins'],
+  ['wooden_shield','smoke_bomb'],
+  // Camp chests — mid-game
+  ['reinforced_shield','blessed_water','gem','spirit_vision_scroll'],
+  ['steel_spear','healing_potion','antidote'],
+  ['scale_armor','berserker_root','gold_coins','ghost_offering'],
+  ['longsword','whetstone','smoke_bomb'],
+  // Cave chests — endgame
+  ['two_handed_axe','greater_potion','berserker_root','ghost_offering'],
+  ['kite_shield','plate_armor','elixir_of_life','spirit_staff'],
+  ['greatsword','warhammer','cloak_of_shadows','gem','gold_coins'],
+];
+
+// ════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════
+let G = {};
+let curEnemy = null;
+let pendingIdx = -1;
+let currentDiff = 'hard';
+let currentClass = 'warrior';
+let META = { highScore: 0, highScoreDiff: '', highScoreClass: '', completions: 0, bestTime: 0, unlocks: {} };
+
+// ════════════════════════════════════════
+//  LOCAL STORAGE
+// ════════════════════════════════════════
+function loadMeta(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY+'_meta');
+    if (raw) META = { ...META, ...JSON.parse(raw) };
+  } catch(e) {}
+}
+function saveMeta(){
+  try { localStorage.setItem(SAVE_KEY+'_meta', JSON.stringify(META)); } catch(e) {}
+}
+function saveProgress(){
+  if (G.gameOver) return;
+  try {
+    const snapshot = {
+      map: G.map, player: G.player, glory: G.glory, gloryLog: G.gloryLog,
+      killCount: G.killCount, restCount: G.restCount, turn: G.turn,
+      bossKilled: G.bossKilled, difficulty: G.difficulty,
+      enemies: G.enemies.map(e => ({ type:e.type, x:e.x, y:e.y, hp:e.hp, maxHp:e.maxHp, alive:e.alive })),
+      spirits: G.spirits ? G.spirits.map(s => ({ type:s.type, x:s.x, y:s.y, hp:s.hp, maxHp:s.maxHp, alive:s.alive })) : [],
+      chests: G.chests,
+    };
+    localStorage.setItem(SAVE_KEY+'_save', JSON.stringify(snapshot));
+  } catch(e) {}
+}
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem(SAVE_KEY+'_save');
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+function clearProgress(){ try { localStorage.removeItem(SAVE_KEY+'_save'); } catch(e) {} }
+
+// ════════════════════════════════════════
+//  TITLE SCREEN
+// ════════════════════════════════════════
+function refreshTitle(){
+  loadMeta();
+  document.getElementById('hs-val').textContent = META.highScore || 0;
+  if (META.highScore > 0) {
+    const diffName = META.highScoreDiff ? `on ${DIFFICULTY[META.highScoreDiff]?.name || 'Hard'}` : '';
+    document.getElementById('hs-sub').textContent =
+      META.completions > 0 ? `${META.completions} quest${META.completions===1?'':'s'} completed ${diffName}` : `Glory earned ${diffName}`;
+    document.getElementById('btn-wipe').style.display = 'inline-block';
+  } else {
+    document.getElementById('hs-sub').textContent = 'No saga yet written';
+    document.getElementById('btn-wipe').style.display = 'none';
+  }
+  // Continue button
+  const save = loadProgress();
+  if (save) {
+    document.getElementById('btn-continue').style.display = 'inline-block';
+    document.getElementById('btn-continue').textContent =
+      `▶ Continue (${save.player?.hp || 0} HP · ${save.glory || 0} ⭐)`;
+  } else {
+    document.getElementById('btn-continue').style.display = 'none';
+  }
+  // Difficulty highlight
+  document.querySelectorAll('.diff-btn[data-diff]').forEach(b => {
+    b.classList.toggle('active', b.dataset.diff === currentDiff);
+  });
+  // Class highlight
+  document.querySelectorAll('.diff-btn[data-class]').forEach(b => {
+    b.classList.toggle('active', b.dataset.class === currentClass);
+  });
+}
+function setDiff(d){
+  currentDiff = d;
+  document.querySelectorAll('.diff-btn[data-diff]').forEach(b => b.classList.toggle('active', b.dataset.diff === d));
+}
+function setClass(c){
+  currentClass = c;
+  document.querySelectorAll('.diff-btn[data-class]').forEach(b => b.classList.toggle('active', b.dataset.class === c));
+}
+function showCodex(){
+  const p = document.getElementById('codex-popup');
+  p.style.display = 'block';
+  document.getElementById('scrim').style.display = 'block';
+  requestAnimationFrame(() => p.classList.add('open'));
+}
+function confirmWipe(){
+  const p = document.getElementById('wipe-popup');
+  p.style.display = 'block';
+  document.getElementById('scrim').style.display = 'block';
+  requestAnimationFrame(() => p.classList.add('open'));
+}
+function wipeAll(){
+  localStorage.removeItem(SAVE_KEY+'_meta');
+  localStorage.removeItem(SAVE_KEY+'_save');
+  META = { highScore: 0, highScoreDiff: '', completions: 0, bestTime: 0 };
+  closePopup();
+  refreshTitle();
+}
+
+// ════════════════════════════════════════
+//  MAP GEN
+// ════════════════════════════════════════
+function genMap(){
+  const m=Array.from({length:MH},()=>Array(MW).fill(T.GRASS));
+  let rx=8;
+  for(let y=0;y<MH;y++){
+    rx=Math.max(4,Math.min(12,rx+(Math.random()*3|0)-1));
+    for(let dx=-1;dx<=1;dx++){const cx=rx+dx;if(cx>=0&&cx<MW)m[y][cx]=dx===0?T.DEEP:T.SHALLOW;}
+    if(y%3===0&&rx>0)m[y][rx-2]=T.SAND;
+    if(y%3===1&&rx+2<MW)m[y][rx+2]=T.SAND;
+  }
+  for(let y=0;y<14;y++)for(let x=13;x<MW;x++){const r=Math.random();m[y][x]=r<.45?T.FOREST:r<.7?T.DGRASS:r<.75?T.DFOREST:T.GRASS;}
+  for(let y=14;y<22;y++)for(let x=22;x<MW;x++)m[y][x]=T.CAMP;
+  for(let x=22;x<MW;x++){m[14][x]=T.WALL;m[21][x]=T.WALL;}
+  for(let y=14;y<22;y++){m[y][22]=T.WALL;m[y][MW-1]=T.WALL;}
+  m[17][22]=T.CAMP;m[18][22]=T.CAMP;
+  for(let y=23;y<MH;y++)for(let x=28;x<MW;x++)m[y][x]=T.CAVE;
+  for(let y=1;y<MH-1;y++)if(m[y][15]!==T.DEEP&&m[y][15]!==T.SHALLOW)m[y][15]=T.STONE;
+  return m;
+}
+function placeEnemies(map){
+  const en=[],used=new Set();
+  const add=(type,x,y)=>{
+    const k=`${x},${y}`;
+    if(!used.has(k)&&x>=0&&x<MW&&y>=0&&y<MH&&map[y][x]!==T.DEEP&&map[y][x]!==T.SHALLOW&&map[y][x]!==T.WALL){
+      en.push(mkEnemy(type,x,y));used.add(k);
+    }
+  };
+  [[18,3],[22,5],[25,8],[20,10],[28,4],[16,7]].forEach(([x,y],i)=>add(i===2?'wolf2':'wolf',x,y));
+  [[25,16],[29,17],[27,19],[32,17],[35,15]].forEach(([x,y],i)=>add(['goblin','goblin','goblin2','goblin3','goblin'][i],x,y));
+  add('troll',33,26);
+  return en;
+}
+function placeChests(map){
+  // Move any chest off walls/water onto nearest passable tile
+  const out = [];
+  CHEST_POS.forEach(([x,y], i) => {
+    let cx = x, cy = y;
+    if (map) {
+      const isBad = (xx, yy) => {
+        const t = map[yy] && map[yy][xx];
+        return t === T.DEEP || t === T.SHALLOW || t === T.WALL;
+      };
+      if (isBad(cx, cy)) {
+        // Search outward for an open tile
+        outer: for (let r = 1; r <= 3; r++) {
+          for (let dy = -r; dy <= r; dy++) {
+            for (let dx = -r; dx <= r; dx++) {
+              const nx = cx + dx, ny = cy + dy;
+              if (nx >= 0 && nx < MW && ny >= 0 && ny < MH && !isBad(nx, ny)) {
+                cx = nx; cy = ny;
+                break outer;
+              }
+            }
+          }
+        }
+      }
+    }
+    out.push({ x: cx, y: cy, items: [...CHEST_ITEMS[i]], opened: false });
+  });
+  return out;
+}
+
+// ════════════════════════════════════════
+//  CANVAS
+// ════════════════════════════════════════
+const canvas=document.getElementById('map-canvas');
+const ctx=canvas.getContext('2d');
+let camScale=1;
+
+function setupCanvas(){
+  canvas.width=MW*TILE; canvas.height=MH*TILE;
+  const wrap=document.getElementById('map-wrap');
+  camScale=wrap.clientWidth/(12*TILE);
+  canvas.style.width=(MW*TILE*camScale)+'px';
+  canvas.style.height=(MH*TILE*camScale)+'px';
+}
+
+function drawMap(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const inSpirit = G.player.inSpiritRealm;
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const t=G.map[y][x];
+    ctx.fillStyle=TCOL[t]; ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+    ctx.font=`${TILE*.55}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    if(t===T.FOREST||t===T.DFOREST){ctx.fillStyle=t===T.FOREST?'rgba(10,40,5,.55)':'rgba(5,25,2,.7)';ctx.fillText('♣',x*TILE+TILE/2,y*TILE+TILE/2);}
+    else if(t===T.DEEP||t===T.SHALLOW){ctx.fillStyle='rgba(120,200,255,.18)';ctx.fillText('~',x*TILE+TILE/2,y*TILE+TILE/2);}
+    else if(t===T.WALL){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(x*TILE,y*TILE,TILE,TILE);}
+    else if(t===T.STONE){ctx.fillStyle='rgba(200,180,150,.2)';ctx.fillText(':',x*TILE+TILE/2,y*TILE+TILE/2);}
+    ctx.strokeStyle='rgba(0,0,0,.1)'; ctx.lineWidth=.5;
+    ctx.strokeRect(x*TILE,y*TILE,TILE,TILE);
+  }
+
+  // Spirit realm tint overlay
+  if (inSpirit) {
+    ctx.fillStyle = 'rgba(140, 80, 200, 0.22)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Chests only visible in living realm
+  if (!inSpirit) {
+    G.chests.forEach(ch=>{
+      if(!ch.opened){ctx.font=`${TILE*.75}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('📦',ch.x*TILE+TILE/2,ch.y*TILE+TILE/2);}
+    });
+  }
+
+  // Living enemies: in living realm, solid; in spirit realm, faint outlines (if spirit-visioned)
+  G.enemies.forEach(e=>{
+    if(!e.alive)return;
+    const dist = Math.abs(e.x-G.player.x)+Math.abs(e.y-G.player.y);
+    if (!G.scouted && dist > 6) return;
+    ctx.font=`${TILE*.7}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+    if (inSpirit) ctx.globalAlpha = 0.25; // ghostly in spirit realm
+    else if (dist > 6) ctx.globalAlpha = 0.5;
+    ctx.fillText(e.icon,e.x*TILE+TILE/2,e.y*TILE+TILE/2);
+    ctx.globalAlpha = 1;
+    if (!inSpirit) {
+      const bx=e.x*TILE+2,by=e.y*TILE+TILE-5,bw=TILE-4,bh=3;
+      ctx.fillStyle='#500';ctx.fillRect(bx,by,bw,bh);
+      ctx.fillStyle='#c03030';ctx.fillRect(bx,by,bw*(e.hp/e.maxHp),bh);
+      if (e.aiState === 'chasing') {
+        ctx.fillStyle = '#ff4020';
+        ctx.font = `bold ${TILE*.32}px serif`;
+        ctx.fillText('!', e.x*TILE + TILE - 6, e.y*TILE + 6);
+      }
+    }
+  });
+
+  // Spirits: visible only if spirit vision; solid in spirit realm, faint in living realm
+  if (G.player.spiritVision) {
+    G.spirits.forEach(s => {
+      if (!s.alive) return;
+      ctx.font=`${TILE*.7}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.globalAlpha = inSpirit ? 1 : 0.35;
+      // Spirit glow
+      ctx.shadowColor = '#b070d8';
+      ctx.shadowBlur = 12;
+      ctx.fillText(s.icon, s.x*TILE+TILE/2, s.y*TILE+TILE/2);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+      if (inSpirit) {
+        const bx=s.x*TILE+2,by=s.y*TILE+TILE-5,bw=TILE-4,bh=3;
+        ctx.fillStyle='#301844';ctx.fillRect(bx,by,bw,bh);
+        ctx.fillStyle='#b070d8';ctx.fillRect(bx,by,bw*(s.hp/s.maxHp),bh);
+        // Subduable marker when below 30% HP
+        if (s.hp / s.maxHp <= 0.3) {
+          ctx.fillStyle = '#ffd060';
+          ctx.font = `bold ${TILE*.32}px serif`;
+          ctx.fillText('✨', s.x*TILE + 8, s.y*TILE + 8);
+        }
+      }
+    });
+  }
+
+  // Player
+  ctx.font=`${TILE*.78}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  if (inSpirit) ctx.globalAlpha = 0.85;
+  const playerIcon = G.player.class === 'shaman' ? '🧙‍♂️' : '🧙';
+  ctx.fillText(playerIcon, G.player.x*TILE+TILE/2, G.player.y*TILE+TILE/2);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = inSpirit ? 'rgba(176,112,216,.85)' : 'rgba(240,192,96,.65)';
+  ctx.lineWidth=2;
+  ctx.strokeRect(G.player.x*TILE+1,G.player.y*TILE+1,TILE-2,TILE-2);
+
+  // Armed action — highlight four target tiles
+  if (G.armed) {
+    const px = G.player.x, py = G.player.y;
+    const dirs = [[0,-1],[1,0],[0,1],[-1,0]];
+    dirs.forEach(([dx,dy]) => {
+      const tx = px + dx, ty = py + dy;
+      if (tx<0||tx>=MW||ty<0||ty>=MH) return;
+      const tile = G.map[ty][tx];
+      // Sprint highlights up to 2 tiles ahead
+      if (G.armed === 'sprint') {
+        for (let i = 1; i <= 2; i++) {
+          const sx = px + dx*i, sy = py + dy*i;
+          if (sx<0||sx>=MW||sy<0||sy>=MH) break;
+          const t = G.map[sy][sx];
+          if (t === T.DEEP || t === T.WALL) break;
+          if (G.enemies.some(e => e.alive && e.x === sx && e.y === sy)) break;
+          ctx.strokeStyle = 'rgba(240,192,96,.9)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(sx*TILE + 2, sy*TILE + 2, TILE - 4, TILE - 4);
+          ctx.fillStyle = 'rgba(240,192,96,.15)';
+          ctx.fillRect(sx*TILE + 2, sy*TILE + 2, TILE - 4, TILE - 4);
+        }
+      } else if (G.armed && G.armed.startsWith('spell_') && G.armedSpell) {
+        const range = G.armedSpell.spell.range || 1;
+        for (let i = 1; i <= range; i++) {
+          const sx = px + dx*i, sy = py + dy*i;
+          if (sx<0||sx>=MW||sy<0||sy>=MH) break;
+          const t = G.map[sy][sx];
+          if (t === T.WALL) break;
+          ctx.strokeStyle = 'rgba(255,128,64,.85)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(sx*TILE + 2, sy*TILE + 2, TILE - 4, TILE - 4);
+          ctx.fillStyle = 'rgba(255,128,64,.18)';
+          ctx.fillRect(sx*TILE + 2, sy*TILE + 2, TILE - 4, TILE - 4);
+          // Stop highlight at first target
+          const enemy = G.player.inSpiritRealm
+            ? G.spirits.find(s => s.alive && s.x === sx && s.y === sy)
+            : G.enemies.find(e => e.alive && e.x === sx && e.y === sy);
+          if (enemy) break;
+        }
+      } else {
+        const en = G.enemies.find(e => e.alive && e.x === tx && e.y === ty);
+        let color = '#ff6020', fill = 'rgba(255,96,32,.18)';
+        if (G.armed === 'feint') { color = '#b070d8'; fill = 'rgba(176,112,216,.18)'; }
+        if (!en && (G.armed === 'thrust' || G.armed === 'bash')) {
+          color = '#666'; fill = 'rgba(0,0,0,.3)';  // no target there
+        }
+        ctx.strokeStyle = color; ctx.lineWidth = 2;
+        ctx.strokeRect(tx*TILE + 2, ty*TILE + 2, TILE - 4, TILE - 4);
+        ctx.fillStyle = fill;
+        ctx.fillRect(tx*TILE + 2, ty*TILE + 2, TILE - 4, TILE - 4);
+      }
+    });
+  }
+
+  // Adjacent enemy with telegraph — pulse red ring
+  if (!G.armed) {
+    const px = G.player.x, py = G.player.y;
+    G.enemies.forEach(e => {
+      if (!e.alive) return;
+      if (chebyshev(e.x, e.y, px, py) !== 1) return;
+      if (!e.nextMove || !e.attackReady) return;
+      const t = (Date.now() / 600) % 1;
+      const alpha = 0.4 + 0.5 * Math.sin(t * Math.PI * 2);
+      ctx.strokeStyle = `rgba(255,80,40,${alpha})`;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(e.x*TILE + 1, e.y*TILE + 1, TILE - 2, TILE - 2);
+    });
+  }
+
+  scrollToPlayer();
+  document.getElementById('turn-counter').textContent = `Turn ${G.turn}`;
+}
+function scrollToPlayer(){
+  const wrap=document.getElementById('map-wrap');
+  wrap.scrollLeft=G.player.x*TILE*camScale-wrap.clientWidth/2+TILE*camScale/2;
+  wrap.scrollTop =G.player.y*TILE*camScale-wrap.clientHeight/2+TILE*camScale/2;
+}
+
+// ════════════════════════════════════════
+//  STATUS EFFECTS
+// ════════════════════════════════════════
+const STATUSES = {
+  poison:    { icon:'☠', name:'Poison', color:'poison',  desc:'4 dmg/turn' },
+  bleed:     { icon:'🩸', name:'Bleed',  color:'bleed',   desc:'3 dmg/turn, no shield regen' },
+  stun:      { icon:'💫', name:'Stun',   color:'stun',    desc:'Lose next turn' },
+  enrage:    { icon:'🔥', name:'Enrage', color:'buff',    desc:'+40% damage' },
+  buff_atk:  { icon:'⚔', name:'Sharpened', color:'buff', desc:'ATK boosted' },
+  feint_set: { icon:'✦',  name:'Set Up', color:'buff',    desc:'Next thrust crits' },
+  buff_def:  { icon:'🛡', name:'Blessed', color:'buff',   desc:'DEF boosted' },
+};
+
+function applyStatus(target, key, turns) {
+  target.statuses = target.statuses || {};
+  target.statuses[key] = { turns };
+}
+function clearStatus(target, key) {
+  if (target.statuses) delete target.statuses[key];
+}
+function hasStatus(target, key) {
+  return target.statuses && target.statuses[key] && target.statuses[key].turns > 0;
+}
+function tickStatuses(target, name) {
+  if (!target.statuses) return [];
+  const events = [];
+  for (const k of Object.keys(target.statuses)) {
+    const s = target.statuses[k];
+    if (k === 'poison') {
+      target.hp -= 4;
+      events.push(`${name} suffers ☠ poison! -4 HP`);
+    } else if (k === 'bleed') {
+      target.hp -= 3;
+      events.push(`${name} bleeds! -3 HP`);
+    }
+    s.turns--;
+    if (s.turns <= 0) {
+      delete target.statuses[k];
+      events.push(`${name} recovers from ${STATUSES[k].name}.`);
+    }
+  }
+  return events;
+}
+function renderStatusIcons(target, containerId) {
+  const cont = document.getElementById(containerId);
+  if (!cont) return;
+  cont.innerHTML = '';
+  if (!target.statuses) return;
+  for (const k of Object.keys(target.statuses)) {
+    const s = target.statuses[k];
+    if (!s || s.turns <= 0) continue;
+    const span = document.createElement('span');
+    const def = STATUSES[k] || { icon:'?', color:'buff' };
+    span.className = 'status-icon ' + def.color;
+    span.textContent = `${def.icon}${s.turns}`;
+    cont.appendChild(span);
+  }
+}
+
+// ════════════════════════════════════════
+//  HUD
+// ════════════════════════════════════════
+// ════════════════════════════════════════
+//  STAT RECALCULATION (call after any equip change)
+// ════════════════════════════════════════
+function recalcStats() {
+  const p = G.player;
+  const w = p.equip.weapon ? ITEMS[p.equip.weapon] : null;
+  const s = p.equip.shield ? ITEMS[p.equip.shield] : null;
+  const a = p.equip.armor  ? ITEMS[p.equip.armor]  : null;
+
+  // Two-handed weapon? Force unequip shield.
+  if (w && w.hands === 2 && p.equip.shield) {
+    const oldShield = p.equip.shield;
+    p.equip.shield = null;
+    if (G.player.inventory.length < 12) G.player.inventory.push(oldShield);
+    addLog(`Two-handed weapon — ${ITEMS[oldShield].name} stowed in bag.`,'info');
+  }
+
+  // Base stats from level
+  p.baseAtk = (w ? w.atk : 5);
+  p.baseDef = (a ? a.def : 0);
+
+  // Final stats (preserve temporary buffs)
+  p.atk = p.baseAtk + (p.tempAtkBuff || 0);
+  p.def = p.baseDef + (p.tempDefBuff || 0);
+
+  // Shield max
+  const newShieldMax = s ? s.shieldMax : 0;
+  if (newShieldMax !== p.shieldMax) {
+    const ratio = p.shieldMax > 0 ? p.shield / p.shieldMax : 1;
+    p.shieldMax = newShieldMax;
+    p.shield = Math.min(p.shieldMax, Math.floor(newShieldMax * ratio));
+  }
+
+  // Stamina cost modifiers (for Brace/Bash)
+  p.stamModBrace = (s?.stamMod || 0) + (a?.stamMod || 0);
+  p.stamModWeapon = w?.stamMod || 0;
+
+  // Combined dodge chance
+  p.dodgeChance = (s?.dodge || 0) + (a?.dodge || 0);
+
+  // Armor traits
+  p.bloodlust = !!(a && a.bloodlust);
+  p.regenPerTurn = a?.regen || 0;
+
+  // Weapon traits
+  p.weaponTrait = w?.trait || 'balanced';
+  p.weaponCrit  = w?.crit ?? 0.15;
+
+  // Spirit vision granted by armor (e.g. Spirit Robes)
+  if (a && a.spiritVision && !p.spiritVision) {
+    p.spiritVision = true;
+  }
+
+  // Reset spirit-power flags before re-applying
+  p.hexTouch = false;
+  p.warcry = false;
+  // Bound spirit passives stack on top
+  (p.boundSpirits || []).forEach(key => {
+    const power = SPIRIT_POWERS[SPIRITS[key]?.power];
+    if (!power) return;
+    if (power.apply) power.apply(p);
+    if (power.flag) p[power.flag] = true;
+  });
+  // Warcry bonus
+  if (p.warcry && p.hp > p.maxHp * 0.5) {
+    p.atk += 4;
+  }
+}
+
+// Apply spirit powers after binding/unbinding (calls recalcStats)
+function applyBoundSpirits() {
+  recalcStats();
+}
+
+// ════════════════════════════════════════
+//  SPELLS (from bound familiar spirits)
+// ════════════════════════════════════════
+// Returns array of { spiritKey, power, spell, cd } for bound spirits with active spells.
+function getKnownSpells() {
+  if (!G.player.boundSpirits) return [];
+  return G.player.boundSpirits
+    .map(key => {
+      const sp = SPIRITS[key];
+      const power = sp && SPIRIT_POWERS[sp.power];
+      if (!power || !power.spell) return null;
+      G.player.spellCooldowns = G.player.spellCooldowns || {};
+      const cd = G.player.spellCooldowns[sp.power] || 0;
+      return { spiritKey: key, power, spell: power.spell, cd, spiritName: sp.name };
+    })
+    .filter(Boolean);
+}
+
+function setSpellCooldown(powerKey, turns) {
+  G.player.spellCooldowns = G.player.spellCooldowns || {};
+  G.player.spellCooldowns[powerKey] = turns;
+}
+function tickSpellCooldowns() {
+  if (!G.player.spellCooldowns) return;
+  for (const k of Object.keys(G.player.spellCooldowns)) {
+    if (G.player.spellCooldowns[k] > 0) G.player.spellCooldowns[k]--;
+  }
+}
+
+// Cast spell at UI slot index (0..2)
+function castSpellSlot(idx) {
+  const spells = getKnownSpells();
+  const s = spells[idx];
+  if (!s) return;
+  castSpell(SPIRITS[s.spiritKey].power);
+}
+
+// Refresh the spell buttons (called from updateActionButtons)
+function renderSpellButtons() {
+  const spells = getKnownSpells();
+  const row = document.getElementById('ab-row-spells');
+  if (!row) return;
+  if (spells.length === 0) {
+    row.style.display = 'none';
+    return;
+  }
+  row.style.display = 'grid';
+  for (let i = 0; i < 3; i++) {
+    const btn = document.getElementById('ab-spell-' + (i + 1));
+    if (!btn) continue;
+    const s = spells[i];
+    if (!s) {
+      btn.style.visibility = 'hidden';
+      btn.disabled = true;
+      btn.innerHTML = '';
+      continue;
+    }
+    btn.style.visibility = 'visible';
+    const cdTxt = s.cd > 0 ? ` (${s.cd})` : '';
+    btn.innerHTML = `<span>${s.power.icon}</span><span class="ab-lbl">${s.power.name}</span><span class="ab-cost">${s.spell.stam}🟡${cdTxt}</span>`;
+    const unavail = G.player.stamina < s.spell.stam || s.cd > 0 || hasStatus(G.player, 'stun');
+    btn.classList.toggle('off', unavail);
+  }
+}
+
+// Cast a spell. For ranged (bolt) → arm directional; for self-target (ward/mend) → instant.
+function castSpell(powerKey) {
+  if (G.gameOver) return;
+  const known = getKnownSpells().find(s => SPIRITS[s.spiritKey].power === powerKey);
+  if (!known) return;
+  if (known.cd > 0) { setStrip(`${known.power.name} on cooldown (${known.cd} turn${known.cd===1?'':'s'}).`); return; }
+  if (G.player.stamina < known.spell.stam) { setStrip(`Need ${known.spell.stam} stamina!`); return; }
+  if (hasStatus(G.player, 'stun')) { setStrip('You are stunned — can only Brace!'); return; }
+
+  if (known.spell.kind === 'bolt') {
+    // Arm directional spell
+    if (G.armed === 'spell_' + powerKey) { cancelAction(); return; }
+    G.armed = 'spell_' + powerKey;
+    G.armedSpell = known;
+    updateArmedUI();
+    drawMap();
+    setStrip(`${known.power.icon} ${known.power.name} — choose direction`);
+    return;
+  }
+
+  // Self spells: cast immediately
+  resolveSpell(known, 0, 0);
+}
+
+function resolveSpell(known, dx, dy) {
+  const p = G.player;
+  p.stamina -= known.spell.stam;
+  setSpellCooldown(SPIRITS[known.spiritKey].power, known.spell.cd);
+  const power = known.power, sp = known.spell;
+
+  if (sp.kind === 'bolt') {
+    // Travel up to range; hit first enemy/spirit in line
+    let hx = p.x, hy = p.y;
+    let target = null;
+    for (let i = 1; i <= sp.range; i++) {
+      hx = p.x + dx * i; hy = p.y + dy * i;
+      if (hx < 0 || hx >= MW || hy < 0 || hy >= MH) break;
+      const tile = G.map[hy][hx];
+      if (tile === T.WALL) break;
+      const inRealm = p.inSpiritRealm;
+      const enemy = inRealm
+        ? G.spirits.find(s => s.alive && s.x === hx && s.y === hy)
+        : G.enemies.find(e => e.alive && e.x === hx && e.y === hy);
+      if (enemy) { target = enemy; break; }
+    }
+    if (!target) {
+      addLog(`${power.icon} ${power.name} fizzles — nothing in line.`, 'info');
+      spawnFloatOnTile(power.icon, p.x + dx, p.y + dy, '#ff8040');
+      endPlayerTurn({});
+      return;
+    }
+    const [lo, hi] = sp.dmg;
+    let dmg = rand(lo, hi);
+    // Crit on spells uses weaponCrit
+    const crit = Math.random() < (p.weaponCrit || 0.15);
+    if (crit) { dmg = Math.floor(dmg * 1.8); flashCrit(); }
+    target.hp -= dmg;
+    spawnFloatOnTile(`-${dmg}`, target.x, target.y, crit ? '#ffd060' : '#ff8040');
+    addLog(`${power.icon} ${power.name} → ${target.name}${crit ? ' ⚡CRIT' : ''}: ${dmg} dmg.`, crit ? 'crit' : 'player');
+    if (target.hp <= 0) {
+      if (p.inSpiritRealm) killSpirit(target); else killEnemy(target);
+    }
+  } else if (sp.kind === 'ward') {
+    p.shield = Math.min(p.shieldMax, p.shield + sp.shield);
+    addLog(`${power.icon} ${power.name}! +${sp.shield} Shield.`, 'loot');
+    spawnFloatOnTile(`+${sp.shield}`, p.x, p.y, '#5dade2');
+  } else if (sp.kind === 'mend') {
+    p.hp = Math.min(p.maxHp, p.hp + sp.hp);
+    addLog(`${power.icon} ${power.name}! +${sp.hp} HP.`, 'loot');
+    spawnFloatOnTile(`+${sp.hp}`, p.x, p.y, '#7de87a');
+  }
+  endPlayerTurn({});
+}
+
+function updateHUD(){
+  const p=G.player;
+  document.getElementById('hp-bar').style.width=Math.max(0,p.hp/p.maxHp*100)+'%';
+  document.getElementById('sh-bar').style.width=Math.max(0,p.shield/Math.max(1,p.shieldMax)*100)+'%';
+  document.getElementById('st-bar').style.width=Math.max(0,p.stamina/p.stamMax*100)+'%';
+  document.getElementById('hp-nums').textContent=`${Math.ceil(p.hp)}/${p.maxHp}`;
+  document.getElementById('sh-nums').textContent=`${Math.ceil(p.shield)}/${p.shieldMax}`;
+  document.getElementById('st-nums').textContent=`${Math.ceil(p.stamina)}/${p.stamMax}`;
+  document.getElementById('glory-val').textContent=G.glory;
+
+  // Weapon
+  const wi = p.equip.weapon ? ITEMS[p.equip.weapon] : null;
+  document.getElementById('eq-wi').textContent = wi ? wi.icon : '✊';
+  document.getElementById('eq-wn').textContent = wi ? wi.name + (wi.hands === 2 ? ' (2H)' : '') : 'Bare fists';
+  document.getElementById('eq-ws').textContent = 'ATK ' + p.atk + (hasStatus(p,'buff_atk') ? ' ⚔' : '');
+
+  // Shield
+  const si = p.equip.shield ? ITEMS[p.equip.shield] : null;
+  document.getElementById('eq-si').textContent = si ? si.icon : '🚫';
+  document.getElementById('eq-sn').textContent = si ? si.name : (wi && wi.hands === 2 ? 'Two-handed' : 'No shield');
+  document.getElementById('eq-ss').textContent = si ? `Block ${si.shieldMax}` + (si.dodge ? ` · Dodge ${Math.floor(si.dodge*100)}%` : '') : '—';
+
+  // Armor
+  const ai = p.equip.armor ? ITEMS[p.equip.armor] : null;
+  document.getElementById('eq-ai').textContent = ai ? ai.icon : '🧵';
+  document.getElementById('eq-an').textContent = ai ? ai.name : 'No armor';
+  document.getElementById('eq-as').textContent = ai ? `DEF ${p.def}` + (ai.dodge ? ` · Dodge ${Math.floor(ai.dodge*100)}%` : '') : 'DEF 0';
+
+  renderStatusIcons(p, 'status-icons');
+  updateActionButtons();
+}
+
+function updateActionButtons() {
+  const p = G.player;
+  const stunned = hasStatus(p, 'stun');
+  const bleeding = hasStatus(p, 'bleed');
+  const hasShield = !!p.equip.shield;
+  const setOff = (id, off) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('off', off);
+  };
+  setOff('ab-thrust', stunned || p.stamina < (2 + (p.stamModWeapon||0)));
+  setOff('ab-bash',   stunned || !hasShield || p.stamina < (3 + (p.stamModBrace||0)));
+  setOff('ab-feint',  stunned || p.stamina < 2);
+  setOff('ab-sprint', stunned || bleeding || p.stamina < 3);
+  setOff('ab-brace',  false); // always available
+  setOff('ab-wait',   stunned);
+  setOff('ab-rest',   stunned || G.enemies?.some(e => e.alive && chebyshev(e.x,e.y,p.x,p.y) === 1));
+  setOff('ab-scout',  p.stamina < 1);
+  const hasPot = p.inventory.some(k=>k&&ITEMS[k].type==='consumable'&&ITEMS[k].hp);
+  setOff('ab-potion', !hasPot);
+  // Spirit row visibility
+  const spiritRow = document.getElementById('ab-row-spirit');
+  if (spiritRow) {
+    if (p.spiritVision) {
+      spiritRow.style.display = 'grid';
+    } else {
+      spiritRow.style.display = 'none';
+    }
+  }
+  // Subdue only enabled in spirit realm when next to weakened spirit
+  const canSubdue = p.inSpiritRealm && p.spiritSlots > 0 &&
+    G.spirits?.some(s => s.alive && dist(s.x, s.y, p.x, p.y) === 1 && s.hp / s.maxHp <= 0.3);
+  setOff('ab-subdue', !canSubdue);
+  // Spells row
+  renderSpellButtons();
+}
+
+// ════════════════════════════════════════
+//  INVENTORY
+// ════════════════════════════════════════
+function renderInv(){
+  const grid=document.getElementById('inv-grid'); grid.innerHTML='';
+  for(let i=0;i<12;i++){
+    const key=G.player.inventory[i];
+    const cell=document.createElement('div');
+    cell.className='inv-cell '+(key?'full':'empty');
+    cell.textContent=key?ITEMS[key].icon:'·';
+    if(key){
+      const lbl=document.createElement('div');lbl.className='inv-lbl';
+      lbl.textContent=ITEMS[key].name.split(' ')[0];cell.appendChild(lbl);
+      const idx=i;
+      cell.addEventListener('touchend',e=>{e.preventDefault();openPopup(idx);});
+      cell.addEventListener('click',()=>openPopup(idx));
+    }
+    grid.appendChild(cell);
+  }
+}
+function openPopup(idx){
+  if(G.gameOver)return;
+  const key=G.player.inventory[idx]; if(!key)return;
+  pendingIdx=idx;
+  const it=ITEMS[key];
+  document.getElementById('pop-title').textContent=it.icon+' '+it.name;
+  document.getElementById('pop-desc').textContent=it.desc;
+  let btnLabel = 'Use';
+  if (it.type === 'trophy') btnLabel = 'Sell';
+  else if (it.type === 'weapon' || it.type === 'shield' || it.type === 'armor') btnLabel = 'Equip';
+  document.getElementById('pop-confirm').textContent = btnLabel;
+  // Reset destroy button to fresh state
+  const db = document.getElementById('pop-destroy');
+  if (db) {
+    db.removeAttribute('data-confirm');
+    db.textContent = '🗑 Destroy';
+    db.style.background = 'rgba(139,48,48,.15)';
+    db.style.color = '#ff9090';
+  }
+  const pop=document.getElementById('item-popup');
+  pop.style.display='block'; document.getElementById('scrim').style.display='block';
+  requestAnimationFrame(()=>pop.classList.add('open'));
+}
+function closePopup(){
+  document.querySelectorAll('.popup-base').forEach(p => {
+    p.classList.remove('open');
+    setTimeout(() => { p.style.display='none'; }, 220);
+  });
+  document.getElementById('scrim').style.display='none';
+  pendingIdx=-1;
+}
+function destroyItem(){
+  if (pendingIdx < 0) return;
+  const key = G.player.inventory[pendingIdx];
+  if (!key) { closePopup(); return; }
+  const it = ITEMS[key];
+  // Two-step confirm for valuable items (gear, scrolls)
+  const valuable = it.type === 'weapon' || it.type === 'shield' || it.type === 'armor' || it.spiritVisionPerm;
+  const btn = document.getElementById('pop-destroy');
+  if (valuable && !btn.dataset.confirm) {
+    btn.dataset.confirm = '1';
+    btn.textContent = 'Tap again to confirm';
+    btn.style.background = 'rgba(139,48,48,.45)';
+    btn.style.color = '#ffd0d0';
+    setTimeout(() => {
+      if (btn) { btn.removeAttribute('data-confirm'); btn.textContent = '🗑 Destroy';
+        btn.style.background = 'rgba(139,48,48,.15)'; btn.style.color = '#ff9090'; }
+    }, 2500);
+    return;
+  }
+  G.player.inventory.splice(pendingIdx, 1);
+  addLog(`Destroyed: ${it.icon} ${it.name}`, 'info');
+  renderInv(); updateHUD(); closePopup(); saveProgress();
+}
+
+function confirmItem(){
+  if(pendingIdx<0)return;
+  const key=G.player.inventory[pendingIdx]; if(!key){closePopup();return;}
+  const it=ITEMS[key];
+  if(it.type==='consumable'){
+    applyConsumable(key);
+    G.player.inventory.splice(pendingIdx,1);
+    renderInv(); updateHUD(); closePopup(); saveProgress();
+  } else if(it.type==='trophy'){
+    G.glory+=it.glory; G.gloryLog.push({label:'Sold '+it.name,val:it.glory});
+    addLog(`Sold ${it.icon} ${it.name} for ${it.glory} glory!`,'loot');
+    G.player.inventory.splice(pendingIdx,1);
+    renderInv(); updateHUD(); closePopup(); saveProgress();
+  } else if (it.type === 'weapon' || it.type === 'shield' || it.type === 'armor') {
+    equipItem(pendingIdx);
+    closePopup();
+  } else {
+    addLog('Cannot use that here.','info');
+    closePopup();
+  }
+}
+function quickPotion(){
+  if(G.gameOver)return;
+  if(G.armed) cancelAction();
+  const idx=G.player.inventory.findIndex(k=>k&&ITEMS[k].type==='consumable'&&ITEMS[k].hp);
+  if(idx===-1){ setStrip('No healing potion to drink!'); return; }
+  applyConsumable(G.player.inventory[idx]); G.player.inventory.splice(idx,1);
+  renderInv();
+  endPlayerTurn({});
+}
+function applyConsumable(key){
+  const it=ITEMS[key];
+  if(it.hp){G.player.hp=Math.min(G.player.maxHp,G.player.hp+it.hp);addLog(`${it.icon} ${it.name}: +${it.hp} HP`,'loot');}
+  if(it.stam){G.player.stamina=Math.min(G.player.stamMax,G.player.stamina+it.stam);addLog(`${it.icon} +${Math.min(it.stam,G.player.stamMax)} Stamina`,'loot');}
+  if(it.atkBuff){
+    applyStatus(G.player, 'buff_atk', it.dur);
+    G.player.tempAtkBuff = (G.player.tempAtkBuff||0) + it.atkBuff;
+    G.player.atk += it.atkBuff;
+    addLog(`${it.icon} ${it.name}! ATK +${it.atkBuff} for ${it.dur} turns`,'loot');
+  }
+  if(it.sharpen){
+    applyStatus(G.player, 'buff_atk', it.dur);
+    G.player.tempAtkBuff = (G.player.tempAtkBuff||0) + it.sharpen;
+    G.player.atk += it.sharpen;
+    addLog(`${it.icon} Whetstone! ATK +${it.sharpen} for ${it.dur} turns`,'loot');
+  }
+  if(it.cure){
+    it.cure.forEach(c => clearStatus(G.player, c));
+    addLog(`${it.icon} Cured: ${it.cure.join(', ')}`,'loot');
+  }
+  if (it.spiritVision) {
+    // Temporary spirit vision
+    G.player.spiritVision = true;
+    G.player.spiritVisionTurns = it.spiritVision;
+    addLog(`${it.icon} ${it.name}! Spirit Vision for ${it.spiritVision} turns.`, 'loot');
+  }
+  if (it.spiritVisionPerm) {
+    G.player.spiritVision = true;
+    G.player.spiritVisionTurns = 0; // 0 = permanent
+    G.player.spiritSlots = Math.max(G.player.spiritSlots, 2);
+    addLog(`${it.icon} ${it.name}! Spirit Vision is yours forever. 2 spirit slots unlocked.`, 'loot');
+  }
+  if (it.weakenSpirit) {
+    // Weakens nearest spirit
+    if (!G.spirits.length) { addLog(`${it.icon} No spirits to commune with.`, 'info'); return; }
+    let nearest = null, minDist = Infinity;
+    G.spirits.forEach(s => {
+      if (!s.alive) return;
+      const d = dist(s.x, s.y, G.player.x, G.player.y);
+      if (d < minDist) { minDist = d; nearest = s; }
+    });
+    if (nearest) {
+      const reduce = Math.floor(nearest.hp * it.weakenSpirit);
+      nearest.hp = Math.max(1, nearest.hp - reduce);
+      addLog(`${it.icon} ${nearest.name} weakens! -${reduce} HP.`, 'loot');
+    }
+  }
+  if (it.defBuff) {
+    applyStatus(G.player, 'buff_def', it.dur);
+    G.player.tempDefBuff = (G.player.tempDefBuff||0) + it.defBuff;
+    G.player.def += it.defBuff;
+    addLog(`${it.icon} Blessed! DEF +${it.defBuff} for ${it.dur} turns`,'loot');
+  }
+  if (it.escape) {
+    // Find adjacent enemies and try to teleport player a few tiles away
+    const adj = G.enemies.filter(e => e.alive && chebyshev(e.x, e.y, G.player.x, G.player.y) <= 2);
+    if (adj.length === 0) {
+      addLog(`${it.icon} ${it.name} works best when foes are near!`, 'info');
+      return;
+    }
+    if (adj.some(e => e.boss)) {
+      addLog(`${it.icon} The smoke parts before the boss — you cannot escape it!`, 'info');
+      return;
+    }
+    // Find a safe tile 3-5 away from player, away from enemies
+    const candidates = [];
+    for (let r = 3; r <= 6 && candidates.length < 8; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) !== r) continue;
+          const nx = G.player.x + dx, ny = G.player.y + dy;
+          if (nx < 0 || nx >= MW || ny < 0 || ny >= MH) continue;
+          const t = G.map[ny][nx];
+          if (t === T.DEEP || t === T.WALL) continue;
+          if (G.enemies.some(e => e.alive && e.x === nx && e.y === ny)) continue;
+          if (G.enemies.some(e => e.alive && dist(e.x, e.y, nx, ny) <= 2)) continue;
+          candidates.push([nx, ny]);
+        }
+      }
+    }
+    if (candidates.length === 0) {
+      addLog(`${it.icon} Nowhere to vanish to — smoke disperses uselessly.`, 'info');
+      return;
+    }
+    const [nx, ny] = candidates[Math.floor(Math.random() * candidates.length)];
+    G.player.x = nx; G.player.y = ny;
+    // Reset all enemy chase states
+    G.enemies.forEach(e => { if (e.alive) { e.aiState = 'idle'; e.attackReady = false; e.nextMove = null; }});
+    addLog(`${it.icon} Smoke fills the air — you vanish into shadow!`, 'loot');
+    spawnFloatOnTile('VANISH', nx, ny, '#b070d8');
+  }
+}
+
+// ════════════════════════════════════════
+//  MOVEMENT & ACTIONS
+// ════════════════════════════════════════
+let dpThrottle = false;
+
+function dp(dx, dy) {
+  if (dpThrottle) return; dpThrottle = true; setTimeout(() => dpThrottle = false, 140);
+  if (G.gameOver) return;
+  if (G.armed) {
+    executeArmedAction(dx, dy);
+    return;
+  }
+  tryMove(dx, dy);
+}
+
+// ────────────────────────────────────
+// ACTION ARMING
+// G.armed: null | 'thrust' | 'bash' | 'feint' | 'sprint'
+// ────────────────────────────────────
+function armAction(action) {
+  if (G.gameOver) return;
+  // Subdue: requires spirit realm, adjacent weakened spirit
+  if (action === 'subdue') {
+    if (!G.player.inSpiritRealm) { setStrip('Must be in spirit realm to subdue!'); return; }
+    if (G.player.spiritSlots <= 0) { setStrip('No spirit slots — you cannot subdue spirits.'); return; }
+    const weak = G.spirits.some(s => s.alive && chebyshev(s.x, s.y, G.player.x, G.player.y) === 1 && s.hp / s.maxHp <= 0.3);
+    if (!weak) { setStrip('No weakened spirit nearby (must be ≤30% HP).'); return; }
+    if (G.armed === action) { cancelAction(); return; }
+    G.armed = action;
+    updateArmedUI();
+    drawMap();
+    setStrip('✨ SUBDUE — choose direction toward weakened spirit');
+    return;
+  }
+  // Check stamina
+  let cost = 0;
+  if (action === 'thrust') cost = 2 + (G.player.stamModWeapon || 0);
+  if (action === 'bash')   cost = 3 + (G.player.stamModBrace || 0);
+  if (action === 'feint')  cost = 2;
+  if (action === 'sprint') cost = 3;
+  if (G.player.stamina < cost) {
+    setStrip(`Need ${cost} stamina for ${action.toUpperCase()}!`);
+    return;
+  }
+  if (action === 'bash' && !G.player.equip.shield) {
+    setStrip('You need a shield to Bash!');
+    return;
+  }
+  if (action === 'sprint' && hasStatus(G.player, 'bleed')) {
+    setStrip('You bleed too heavily to sprint!');
+    return;
+  }
+  if (hasStatus(G.player, 'stun') && action !== 'brace') {
+    setStrip('You are stunned — can only Brace!');
+    return;
+  }
+  // Toggle: tap same action twice to cancel
+  if (G.armed === action) { cancelAction(); return; }
+
+  G.armed = action;
+  updateArmedUI();
+  drawMap();
+
+  const hints = {
+    thrust: '🗡 THRUST — choose direction',
+    bash:   '🛡 BASH — choose direction (must hit a foe)',
+    feint:  '✦ FEINT — choose direction (toward your future target)',
+    sprint: '💨 SPRINT — choose direction',
+  };
+  setStrip(hints[action] || 'Choose a direction.');
+}
+
+function cancelAction() {
+  if (!G.armed) return;
+  G.armed = null;
+  G.armedSpell = null;
+  updateArmedUI();
+  drawMap();
+  setStrip('Action cancelled.');
+}
+
+function updateArmedUI() {
+  const banner = document.getElementById('armed-banner');
+  const dpMid = document.getElementById('dp-cancel');
+  // Reset all action buttons
+  document.querySelectorAll('.ab').forEach(b => b.classList.remove('armed'));
+  if (G.armed) {
+    const map = { thrust:'ab-thrust', bash:'ab-bash', feint:'ab-feint', sprint:'ab-sprint' };
+    const id = map[G.armed];
+    if (id) document.getElementById(id).classList.add('armed');
+    let label = '';
+    if (G.armed.startsWith('spell_') && G.armedSpell) {
+      label = `${G.armedSpell.power.icon} ${G.armedSpell.power.name} — choose direction`;
+      // Highlight the matching spell slot button as armed
+      const spells = getKnownSpells();
+      const slotIdx = spells.findIndex(s => SPIRITS[s.spiritKey].power === SPIRITS[G.armedSpell.spiritKey].power);
+      if (slotIdx >= 0) {
+        const btn = document.getElementById('ab-spell-' + (slotIdx + 1));
+        if (btn) btn.classList.add('armed');
+      }
+    } else {
+      const labelMap = {
+        thrust: '🗡 Choose direction to thrust',
+        bash:   '🛡 Choose direction to bash',
+        feint:  '✦ Choose direction to feint',
+        sprint: '💨 Choose direction to sprint',
+        subdue: '✨ Choose direction to subdue spirit',
+      };
+      label = labelMap[G.armed] || '';
+    }
+    banner.textContent = label;
+    banner.classList.add('show');
+    dpMid.classList.add('armed-mode');
+    dpMid.textContent = '✕';
+  } else {
+    banner.classList.remove('show');
+    dpMid.classList.remove('armed-mode');
+    dpMid.textContent = '✦';
+  }
+}
+
+function executeArmedAction(dx, dy) {
+  const action = G.armed;
+  G.armed = null;
+  if (action && action.startsWith('spell_')) {
+    const armed = G.armedSpell;
+    G.armedSpell = null;
+    updateArmedUI();
+    if (armed) resolveSpell(armed, dx, dy);
+    return;
+  }
+  updateArmedUI();
+  if (action === 'thrust') doThrust(dx, dy);
+  else if (action === 'bash')   doBash(dx, dy);
+  else if (action === 'feint')  doFeint(dx, dy);
+  else if (action === 'sprint') doSprint(dx, dy);
+  else if (action === 'subdue') subdueSpirit(dx, dy);
+}
+
+// ════════════════════════════════════════
+//  ENEMY AI
+// ════════════════════════════════════════
+function isPassableForEnemy(x, y, enemy) {
+  if (x < 0 || x >= MW || y < 0 || y >= MH) return false;
+  const t = G.map[y][x];
+  if (t === T.DEEP || t === T.WALL) return false;
+  // Wolves avoid water; goblins/troll do not enter water
+  if (t === T.SHALLOW && enemy.type.startsWith('wolf')) return false;
+  if (t === T.SHALLOW) return false;
+  // Don't step on another enemy
+  if (G.enemies.some(e => e.alive && e !== enemy && e.x === x && e.y === y)) return false;
+  // Don't step on player position (they'll initiate combat next move)
+  if (G.player.x === x && G.player.y === y) return false;
+  // Don't step on closed chests
+  if (G.chests.some(c => !c.opened && c.x === x && c.y === y)) return false;
+  return true;
+}
+
+function dist(ax, ay, bx, by) {
+  return Math.abs(ax - bx) + Math.abs(ay - by);
+}
+
+function chebyshev(ax, ay, bx, by) {
+  return Math.max(Math.abs(ax - bx), Math.abs(ay - by));
+}
+
+// Move enemy one step toward target. Returns true if moved.
+function stepToward(enemy, tx, ty) {
+  const dx = tx - enemy.x, dy = ty - enemy.y;
+  // Prefer the larger axis first, fallback to the other
+  const candidates = [];
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    if (dx !== 0) candidates.push([Math.sign(dx), 0]);
+    if (dy !== 0) candidates.push([0, Math.sign(dy)]);
+    if (dx !== 0 && dy === 0) candidates.push([0, 1], [0, -1]);
+    if (dy !== 0 && dx === 0) candidates.push([1, 0], [-1, 0]);
+  } else {
+    if (dy !== 0) candidates.push([0, Math.sign(dy)]);
+    if (dx !== 0) candidates.push([Math.sign(dx), 0]);
+    if (dy !== 0 && dx === 0) candidates.push([1, 0], [-1, 0]);
+    if (dx !== 0 && dy === 0) candidates.push([0, 1], [0, -1]);
+  }
+  for (const [ddx, ddy] of candidates) {
+    const nx = enemy.x + ddx, ny = enemy.y + ddy;
+    if (isPassableForEnemy(nx, ny, enemy)) {
+      enemy.x = nx; enemy.y = ny;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Move away from target
+function stepAway(enemy, tx, ty) {
+  return stepToward(enemy, enemy.x + (enemy.x - tx), enemy.y + (enemy.y - ty));
+}
+
+function wanderStep(enemy) {
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  // Shuffle
+  for (let i = dirs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+  }
+  for (const [dx, dy] of dirs) {
+    const nx = enemy.x + dx, ny = enemy.y + dy;
+    // Stay within home territory (5-tile radius for wanderers)
+    if (chebyshev(nx, ny, enemy.homeX, enemy.homeY) > 5) continue;
+    if (isPassableForEnemy(nx, ny, enemy)) {
+      enemy.x = nx; enemy.y = ny;
+      return true;
+    }
+  }
+  return false;
+}
+
+
+// Movement: walk one tile. Walking into an enemy is blocked — use Thrust/Bash.
+function tryMove(dx, dy) {
+  if (G.gameOver) return;
+  const p = G.player;
+  const nx = p.x + dx, ny = p.y + dy;
+  if (nx < 0 || nx >= MW || ny < 0 || ny >= MH) return;
+  const t = G.map[ny][nx];
+  if (t === T.DEEP || t === T.WALL) { setStrip('The way is blocked.'); return; }
+
+  if (p.inSpiritRealm) {
+    // In spirit realm: spirits block, living enemies don't
+    const spiritAt = G.spirits.find(s => s.alive && s.x === nx && s.y === ny);
+    if (spiritAt) {
+      setStrip(`${spiritAt.name} blocks your path — Thrust or Subdue!`);
+      return;
+    }
+  } else {
+    const enemyAt = G.enemies.find(e => e.alive && e.x === nx && e.y === ny);
+    if (enemyAt) {
+      setStrip(`${enemyAt.name} blocks your path — Thrust or Bash to attack!`);
+      return;
+    }
+  }
+  p.x = nx; p.y = ny;
+
+  // Chest pickup (chests are physical, only in living realm)
+  if (!p.inSpiritRealm) {
+    const ch = G.chests.find(c => c.x === nx && c.y === ny && !c.opened);
+    if (ch) openChest(ch);
+  }
+
+  endPlayerTurn({ moved: true });
+}
+
+// ════════════════════════════════════════
+//  PLAYER ACTIONS (inline on map)
+// ════════════════════════════════════════
+function adjacentEnemy(dx, dy) {
+  const tx = G.player.x + dx, ty = G.player.y + dy;
+  // In spirit realm, target spirits; otherwise living enemies
+  if (G.player.inSpiritRealm) {
+    return G.spirits.find(s => s.alive && s.x === tx && s.y === ty);
+  }
+  return G.enemies.find(e => e.alive && e.x === tx && e.y === ty);
+}
+
+function rand(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+function flashCrit() {
+  const el = document.createElement('div');
+  el.className = 'crit-flash';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 400);
+}
+
+function doThrust(dx, dy) {
+  const p = G.player;
+  const wpn = p.equip.weapon ? ITEMS[p.equip.weapon] : null;
+  const target = adjacentEnemy(dx, dy);
+  if (!target) {
+    setStrip('Nothing to thrust there.');
+    return;
+  }
+  const cost = 2 + (p.stamModWeapon || 0);
+  p.stamina -= cost;
+
+  // Calculate damage (uses weapon traits)
+  let dmg = rand(Math.floor(p.atk * 0.85), Math.floor(p.atk * 1.15));
+  if (p.bloodlust && p.hp < p.maxHp * 0.5) dmg = Math.floor(dmg * 1.3);
+  let crit = Math.random() < (p.weaponCrit || 0.15);
+  if (p.feintSet) { crit = true; p.feintSet = false; clearStatus(p, 'feint_set'); }
+  let fd = crit ? Math.floor(dmg * 2.2) : dmg;
+  let bonusMsg = '';
+
+  const isSpiritTarget = p.inSpiritRealm;
+  const trait = p.weaponTrait;
+  if (trait === 'spirit') {
+    // Spirit weapons: double damage to spirits, half to mortal flesh
+    fd = isSpiritTarget ? Math.floor(fd * 2) : Math.floor(fd * 0.5);
+    fd = Math.max(1, fd - Math.floor(target.def * 0.3));
+    bonusMsg = isSpiritTarget ? ' Spirit strike!' : '';
+  } else if (trait === 'pierce') {
+    // Mortal weapons in spirit realm hit at 50%
+    if (isSpiritTarget) fd = Math.floor(fd * 0.5);
+    fd = Math.max(1, fd - Math.floor(target.def * 0.5));
+  } else if (trait === 'crush') {
+    if (isSpiritTarget) fd = Math.floor(fd * 0.5);
+    fd = Math.max(1, fd - Math.floor(target.def * 0.3));
+    if (Math.random() < 0.18 && target.hp - fd > 0) {
+      applyStatus(target, 'stun', 1);
+      bonusMsg = ' Crushed!';
+    }
+  } else if (trait === 'cleave') {
+    if (isSpiritTarget) fd = Math.floor(fd * 0.5);
+    fd = Math.max(1, fd - target.def);
+    if (target.hp - fd > 0 && !hasStatus(target, 'bleed')) {
+      applyStatus(target, 'bleed', 3);
+      bonusMsg = ' Bleeds!';
+    }
+  } else if (trait === 'sweep') {
+    if (isSpiritTarget) fd = Math.floor(fd * 0.5);
+    fd = Math.max(1, fd - target.def);
+    const sc = target.statuses ? Object.keys(target.statuses).filter(k => target.statuses[k].turns > 0).length : 0;
+    if (sc > 0) {
+      const b = Math.floor(fd * 0.25 * sc);
+      fd += b;
+      bonusMsg = ` +${b} sweep`;
+    }
+  } else {
+    if (isSpiritTarget) fd = Math.floor(fd * 0.5);
+    fd = Math.max(1, fd + 1 - Math.floor(target.def * 0.4));
+  }
+
+  // Hex Touch spirit power
+  if (p.hexTouch && target.hp - fd > 0 && !hasStatus(target, 'poison')) {
+    applyStatus(target, 'poison', 3);
+    bonusMsg += ' Hexed!';
+  }
+
+  target.hp -= fd;
+  if (crit) flashCrit();
+  spawnFloatOnTile(`-${fd}`, target.x, target.y, crit ? '#ffd060' : '#e87070');
+  const wpnName = wpn ? wpn.name : 'Fist';
+  addLog(`${wpnName} → ${target.name}${crit ? ' ⚡CRIT' : ''}: ${fd} dmg${bonusMsg}.`, crit ? 'crit' : 'player');
+
+  if (target.hp <= 0) {
+    if (isSpiritTarget) killSpirit(target);
+    else killEnemy(target);
+  }
+  endPlayerTurn({});
+}
+
+function killSpirit(target) {
+  target.alive = false; target.hp = 0;
+  const diff = DIFFICULTY[G.difficulty];
+  const gloryGain = Math.floor(target.glory * diff.gloryMult);
+  G.glory += gloryGain;
+  G.gloryLog.push({ label: 'Banished ' + target.name, val: gloryGain });
+  addLog(`${target.name} dissipates! +${gloryGain} Glory!`, 'enemy');
+}
+
+// Called when player HP hits 0
+function playerDies() {
+  const p = G.player;
+  // Shaman with spirit vision and remaining slots becomes a ghost — one chance
+  if (p.spiritVision && p.class === 'shaman' && !p.isSpirit) {
+    p.isSpirit = true;
+    p.inSpiritRealm = true;
+    p.hp = Math.floor(p.maxHp * 0.3);
+    p.shield = 0;
+    p.stamina = p.stamMax;
+    addLog('☠ You die... but your spirit endures! Find a way back, or be lost forever.', 'boss');
+    addLog('As a spirit, you can only fight in the spirit realm. Bind a powerful spirit to be reborn.', 'info');
+    spawnInitialSpirits();
+    drawMap(); updateHUD();
+    return true;
+  }
+  return false;
+}
+
+function doBash(dx, dy) {
+  const p = G.player;
+  const target = adjacentEnemy(dx, dy);
+  if (!target) {
+    setStrip('No foe to bash that way.');
+    return;
+  }
+  const cost = 3 + (p.stamModBrace || 0);
+  p.stamina -= cost;
+
+  let dmg = rand(Math.floor(p.atk * 0.35), Math.floor(p.atk * 0.65));
+  if (p.bloodlust && p.hp < p.maxHp * 0.5) dmg = Math.floor(dmg * 1.3);
+  if (p.inSpiritRealm && p.weaponTrait !== 'spirit') dmg = Math.floor(dmg * 0.5);
+  let fd = Math.max(1, dmg - Math.floor(target.def * 0.3));
+  target.hp -= fd;
+  spawnFloatOnTile(`-${fd}`, target.x, target.y, '#e87070');
+  let stunChance = 0.6;
+  if (p.weaponTrait === 'crush') stunChance += 0.2;
+  let msg = `Bash → ${target.name}: ${fd} dmg.`;
+  if (Math.random() < stunChance && target.hp > 0) {
+    applyStatus(target, 'stun', 1);
+    msg += ` Stunned!`;
+    spawnFloatOnTile('STUN', target.x, target.y, '#b070d8');
+  }
+  addLog(msg, 'player');
+  if (target.hp <= 0) {
+    if (p.inSpiritRealm) killSpirit(target);
+    else killEnemy(target);
+  }
+  endPlayerTurn({});
+}
+
+function doFeint(dx, dy) {
+  const p = G.player;
+  // Feint doesn't need a target; direction just consumes the click
+  p.stamina -= 2;
+  p.feintSet = true;
+  applyStatus(p, 'feint_set', 2);
+  addLog('You feint — next strike will land critically!', 'player');
+  endPlayerTurn({});
+}
+
+function doBrace() {
+  if (G.gameOver) return;
+  if (G.armed) cancelAction();
+  const p = G.player;
+  const hasShield = !!p.equip.shield;
+  p.braced = true;
+  const sg = hasShield ? rand(6, 10) : rand(2, 4);
+  p.shield = Math.min(p.shieldMax, p.shield + sg);
+  p.stamina = Math.min(p.stamMax, p.stamina + 4);
+  addLog(hasShield ? `Brace! +${sg} Shield, +4 Stamina.` : `Brace barehanded! +${sg}, +4 stam.`, 'player');
+  spawnFloatOnTile('BRACE', p.x, p.y, '#5dade2');
+  endPlayerTurn({ braced: true });
+}
+
+function doWait() {
+  if (G.gameOver) return;
+  if (G.armed) cancelAction();
+  const p = G.player;
+  p.stamina = Math.min(p.stamMax, p.stamina + 3);
+  addLog('You wait, catching your breath. +3 Stamina.', 'info');
+  endPlayerTurn({});
+}
+
+function doSprint(dx, dy) {
+  const p = G.player;
+  p.stamina -= 3;
+  let moved = 0;
+  for (let i = 0; i < 3; i++) {
+    const nx = p.x + dx, ny = p.y + dy;
+    if (nx < 0 || nx >= MW || ny < 0 || ny >= MH) break;
+    const t = G.map[ny][nx];
+    if (t === T.DEEP || t === T.WALL) break;
+    if (G.enemies.some(e => e.alive && e.x === nx && e.y === ny)) break;
+    p.x = nx; p.y = ny;
+    moved++;
+    const ch = G.chests.find(c => c.x === nx && c.y === ny && !c.opened);
+    if (ch) { openChest(ch); break; }
+  }
+  if (moved === 0) {
+    p.stamina += 3;
+    setStrip('Cannot sprint that way.');
+    return;
+  }
+  addLog(`💨 Sprint ${moved} tile${moved === 1 ? '' : 's'}!`, 'info');
+  endPlayerTurn({ moved: true });
+}
+
+function doRest() {
+  if (G.gameOver) return;
+  if (G.armed) cancelAction();
+  const p = G.player;
+  const t = G.map[p.y][p.x];
+  if (t === T.CAMP || t === T.CAVE) { setStrip('Cannot rest — danger surrounds you!'); return; }
+  if (hasStatus(p, 'poison') || hasStatus(p, 'bleed')) {
+    setStrip('Cannot rest while afflicted!');
+    return;
+  }
+  // Cannot rest with an enemy adjacent
+  const adj = G.enemies.find(e => e.alive && chebyshev(e.x, e.y, p.x, p.y) === 1);
+  if (adj) { setStrip(`${adj.name} stands too close — cannot rest!`); return; }
+
+  p.hp = Math.min(p.maxHp, p.hp + 8);
+  p.stamina = p.stamMax;
+  p.shield = Math.min(p.shieldMax, p.shield + 4);
+  G.restCount++;
+  addLog('You rest. +8 HP, full stamina, +4 shield. (2 turns)', 'info');
+  spawnFloatOnTile('+8 HP', p.x, p.y, '#7de87a');
+
+  // Ambush check
+  if (G.difficulty === 'nightmare' && Math.random() < 0.25) {
+    const nearby = G.enemies.filter(e => e.alive && dist(e.x, e.y, p.x, p.y) <= 5);
+    if (nearby.length > 0) {
+      addLog(`⚠ Ambushed during rest!`, 'enemy');
+    }
+  }
+  endPlayerTurn({ extraTicks: 1 });
+}
+
+function doScout() {
+  if (G.gameOver) return;
+  if (G.armed) cancelAction();
+  if (G.player.stamina < 1) { setStrip('Too exhausted to scout!'); return; }
+  G.player.stamina -= 1;
+  G.scouted = true;
+  addLog('👁 You scan the area, marking foes.', 'info');
+  setTimeout(() => { G.scouted = false; drawMap(); }, 6000);
+  endPlayerTurn({});
+}
+
+function killEnemy(target) {
+  target.alive = false; target.hp = 0;
+  const diff = DIFFICULTY[G.difficulty];
+  const gloryGain = Math.floor(target.glory * diff.gloryMult);
+  G.glory += gloryGain;
+  G.killCount++;
+  if (target.boss) G.bossKilled = true;
+  G.gloryLog.push({ label: 'Slew ' + target.name, val: gloryGain });
+  addLog(`${target.name} falls! +${gloryGain} Glory!`, target.boss ? 'boss' : 'enemy');
+  // Drop loot in inventory
+  (target.loot || []).forEach(l => {
+    if (l && Math.random() < diff.lootChance && G.player.inventory.length < 12) {
+      G.player.inventory.push(l);
+      addLog(`Found: ${ITEMS[l].icon} ${ITEMS[l].name}`, 'loot');
+    }
+  });
+  // Slain enemies leave a spirit on the spirit realm
+  if (SPIRITS[target.type]) {
+    spawnSpirit(target.type, target.x, target.y, /*fromDeath=*/true);
+  }
+  renderInv();
+}
+
+// ════════════════════════════════════════
+//  SPIRIT REALM
+// ════════════════════════════════════════
+function spawnSpirit(type, x, y, fromDeath) {
+  const def = SPIRITS[type];
+  if (!def) return;
+  // Don't spawn duplicates at same tile
+  if (G.spirits.some(s => s.alive && s.x === x && s.y === y)) return;
+  G.spirits.push({
+    type, x, y,
+    homeX: x, homeY: y,
+    name: def.name, icon: def.icon,
+    hp: def.hp, maxHp: def.hp,
+    atk: def.atk, def: 0,
+    glory: def.glory,
+    power: def.power,
+    boss: def.boss || false,
+    alive: true,
+    aiState: 'idle',
+    nextMove: null,
+    attackReady: false,
+    statuses: {},
+    fromDeath: !!fromDeath, // helps decide if they wander
+  });
+}
+
+function spawnInitialSpirits() {
+  // A few ambient spirits scattered in the spirit realm (independent of slain enemies)
+  // These are weaker echoes from ancient battles.
+  const positions = [
+    ['wolf', 20, 8], ['goblin', 28, 18], ['goblin2', 30, 16],
+  ];
+  positions.forEach(([t, x, y]) => spawnSpirit(t, x, y, false));
+}
+
+function toggleRealm() {
+  if (G.gameOver) return;
+  if (G.armed) cancelAction();
+  const p = G.player;
+  if (!p.spiritVision) {
+    setStrip('You lack Spirit Vision.');
+    return;
+  }
+  if (p.isSpirit && p.inSpiritRealm) {
+    setStrip('Your body lies dead. You cannot return — bind a spirit to be reborn!');
+    return;
+  }
+  p.inSpiritRealm = !p.inSpiritRealm;
+  if (p.inSpiritRealm && G.spirits.length === 0) {
+    spawnInitialSpirits();
+  }
+  addLog(p.inSpiritRealm ? '🌀 You cross into the spirit realm. The world dims.' : '🌀 You return to the living world.', 'info');
+  drawMap(); updateHUD();
+}
+
+function subdueSpirit(dx, dy) {
+  const p = G.player;
+  if (p.spiritSlots <= 0) {
+    setStrip('No spirit slots available!');
+    return;
+  }
+  const tx = p.x + dx, ty = p.y + dy;
+  const target = G.spirits.find(s => s.alive && s.x === tx && s.y === ty);
+  if (!target) { setStrip('No spirit there.'); return; }
+  if (target.hp / target.maxHp > 0.3) {
+    setStrip('Spirit too strong — weaken it below 30% HP first.');
+    return;
+  }
+  if (p.boundSpirits.includes(target.type)) {
+    setStrip('You have already bound this spirit\'s essence.');
+    return;
+  }
+  // Bind!
+  p.boundSpirits.push(target.type);
+  if (p.boundSpirits.length > p.spiritSlots) {
+    const dropped = p.boundSpirits.shift();
+    addLog(`${SPIRITS[dropped].name} fades — slots full.`, 'info');
+  }
+  target.alive = false; target.hp = 0;
+  const power = SPIRIT_POWERS[target.power];
+  addLog(`✨ Bound ${target.name}! Gained ${power?.icon || ''} ${power?.name || target.power}.`, 'loot');
+
+  // If subduing as a ghost, you are reborn
+  if (p.isSpirit) {
+    p.isSpirit = false;
+    p.inSpiritRealm = false;
+    p.hp = Math.floor(p.maxHp * 0.6);
+    p.shield = Math.floor(p.shieldMax * 0.5);
+    p.stamina = p.stamMax;
+    addLog('🌅 The bound spirit pulls you back into flesh! You live again.', 'boss');
+    spawnFloatOnTile('REBORN', p.x, p.y, '#ffd060');
+  }
+
+  applyBoundSpirits();
+  updateHUD(); drawMap();
+  endPlayerTurn({});
+}
+
+function showSpiritsPopup() {
+  const p = G.player;
+  if (!p.spiritVision) {
+    setStrip('You lack Spirit Vision.');
+    return;
+  }
+  // Build content
+  const pop = document.getElementById('spirits-popup');
+  const list = document.getElementById('spirits-list');
+  if (!pop || !list) return;
+  list.innerHTML = '';
+  if (p.boundSpirits.length === 0) {
+    list.innerHTML = '<div style="color:#8a7050;font-style:italic;text-align:center;padding:1rem">No spirits bound. Cross into the spirit realm and subdue weakened spirits.</div>';
+  } else {
+    p.boundSpirits.forEach((key, i) => {
+      const sp = SPIRITS[key];
+      const power = SPIRIT_POWERS[sp.power];
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;padding:0.5rem;border:1px solid rgba(201,146,42,.2);border-radius:4px;margin-bottom:0.4rem;background:rgba(0,0,0,.3)';
+      row.innerHTML = `
+        <div style="font-size:1.4rem">${sp.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Cinzel',serif;font-size:0.78rem;color:var(--gold-light)">${sp.name}</div>
+          <div style="font-size:0.7rem;color:#c4a97a">${power?.icon || ''} ${power?.name || ''} — ${power?.desc || ''}</div>
+        </div>
+        <button style="font-family:'Cinzel',serif;font-size:0.65rem;padding:0.35rem 0.5rem;border:1px solid #8b3030;background:rgba(139,48,48,.15);color:#ff9090;border-radius:3px;cursor:pointer" onclick="unbindSpirit(${i})">Release</button>
+      `;
+      list.appendChild(row);
+    });
+  }
+  // Show slot count
+  const slotEl = document.getElementById('spirits-slot-count');
+  if (slotEl) slotEl.textContent = `${p.boundSpirits.length} / ${p.spiritSlots} bound`;
+  pop.style.display = 'block';
+  document.getElementById('scrim').style.display = 'block';
+  requestAnimationFrame(() => pop.classList.add('open'));
+}
+
+function unbindSpirit(idx) {
+  const removed = G.player.boundSpirits.splice(idx, 1)[0];
+  if (removed) addLog(`Released ${SPIRITS[removed].name}.`, 'info');
+  applyBoundSpirits();
+  updateHUD();
+  showSpiritsPopup(); // refresh
+}
+
+// ════════════════════════════════════════
+//  END-OF-TURN: status ticks, buff expiry, enemy AI
+// ════════════════════════════════════════
+function endPlayerTurn({ moved = false, braced = false, extraTicks = 0 } = {}) {
+  const p = G.player;
+  G.turn++;
+
+  // Player status tick (poison/bleed/buff durations)
+  const events = tickStatuses(p, 'You');
+  events.forEach(ev => addLog(ev, 'info'));
+
+  // Temp buff expiry
+  if (p.tempAtkBuff > 0 && !hasStatus(p, 'buff_atk')) {
+    p.atk -= p.tempAtkBuff; p.tempAtkBuff = 0;
+    addLog('Your weapon\'s edge dulls.', 'info');
+  }
+  if (p.tempDefBuff > 0 && !hasStatus(p, 'buff_def')) {
+    p.def -= p.tempDefBuff; p.tempDefBuff = 0;
+    addLog('The blessing fades.', 'info');
+  }
+
+  // Spirit vision countdown (0 means permanent)
+  if (p.spiritVision && p.spiritVisionTurns > 0) {
+    p.spiritVisionTurns--;
+    if (p.spiritVisionTurns <= 0 && !(CLASSES[p.class]?.spiritVision)) {
+      // Only revoke if not class-granted
+      p.spiritVision = false;
+      if (p.inSpiritRealm) {
+        p.inSpiritRealm = false;
+        addLog('🌀 Spirit Vision fades — you are pulled back to the living realm.', 'info');
+      } else {
+        addLog('🌀 Spirit Vision fades.', 'info');
+      }
+    }
+  }
+
+  // Light passive regen each turn
+  if (!braced) {
+    if (!hasStatus(p, 'bleed')) p.shield = Math.min(p.shieldMax, p.shield + 1);
+    p.stamina = Math.min(p.stamMax, p.stamina + 1);
+  } else {
+    p.stamina = Math.min(p.stamMax, p.stamina + 0); // brace gave its own
+  }
+  if (p.regenPerTurn && p.hp > 0 && p.hp < p.maxHp) {
+    p.hp = Math.min(p.maxHp, p.hp + p.regenPerTurn);
+  }
+  p.braced = braced;
+
+  // Decay sprint trace
+  if (p.sprintingTrace) p.sprintingTrace--;
+  tickSpellCooldowns();
+
+  // Check player death first (from status damage)
+  if (p.hp <= 0) {
+    p.hp = 0;
+    if (playerDies()) return;
+    drawMap(); updateHUD();
+    addLog('You collapse...', 'enemy');
+    setTimeout(() => showEnd(false), 800);
+    return;
+  }
+
+  // ── ENEMY TURNS ──
+  for (let i = 0; i < 1 + extraTicks; i++) {
+    enemiesTakeTurn();
+    spiritsTakeTurn();
+    if (p.hp <= 0) {
+      p.hp = 0;
+      if (playerDies()) return;
+      drawMap(); updateHUD();
+      addLog('You collapse...', 'enemy');
+      setTimeout(() => showEnd(false), 800);
+      return;
+    }
+    if (G.bossKilled) break;
+  }
+
+  G.scouted = false;
+  drawMap(); updateHUD();
+
+  if (G.bossKilled) {
+    setTimeout(() => showEnd(true), 700);
+    return;
+  }
+  saveProgress();
+  // Update telegraph banner for nearest adjacent enemy with a queued move
+  refreshTelegraphBanner();
+}
+
+function refreshTelegraphBanner() {
+  const banner = document.getElementById('telegraph-banner');
+  const p = G.player;
+  // Find adjacent enemy with a queued nextMove
+  const adj = G.enemies.find(e => e.alive && chebyshev(e.x, e.y, p.x, p.y) === 1 && e.nextMove);
+  if (adj && adj.nextMove) {
+    banner.textContent = `${adj.name}: ${adj.nextMove.telegraph || adj.nextMove.name}`;
+    banner.className = 'show' + (adj.nextMove.heavy ? '' : ' weak');
+  } else {
+    banner.className = '';
+    banner.textContent = '';
+  }
+}
+
+// ════════════════════════════════════════
+// CHESTS
+// ════════════════════════════════════════
+function openChest(ch){
+  ch.opened=true;
+  addLog('📦 You find a chest!','loot');
+  switchTab('bag');
+  ch.items.forEach(k=>{
+    if(!k)return; const it=ITEMS[k];
+    if (G.player.inventory.length < 12) {
+      G.player.inventory.push(k);
+      addLog(`Got: ${it.icon} ${it.name}`,'loot');
+    } else {
+      addLog(`Bag full — left ${it.icon} ${it.name} behind.`,'info');
+    }
+  });
+  renderInv();updateHUD();drawMap();saveProgress();
+}
+
+// ════════════════════════════════════════
+//  EQUIP / UNEQUIP
+// ════════════════════════════════════════
+function equipItem(invIdx) {
+  const key = G.player.inventory[invIdx];
+  if (!key) return;
+  const it = ITEMS[key];
+  const p = G.player;
+
+  let slot = null;
+  if (it.type === 'weapon') slot = 'weapon';
+  else if (it.type === 'shield') slot = 'shield';
+  else if (it.type === 'armor')  slot = 'armor';
+  else return;
+
+  // Can't equip shield while 2H weapon held
+  if (slot === 'shield' && p.equip.weapon && ITEMS[p.equip.weapon].hands === 2) {
+    setStrip('Cannot use a shield with a two-handed weapon!');
+    return;
+  }
+
+  const old = p.equip[slot];
+  p.equip[slot] = key;
+  // Move new item out of inventory
+  G.player.inventory.splice(invIdx, 1);
+  // Put old item back in inventory (if space)
+  if (old) {
+    if (G.player.inventory.length < 12) {
+      G.player.inventory.push(old);
+    } else {
+      addLog(`Bag full — dropped ${ITEMS[old].name}.`, 'info');
+    }
+  }
+  recalcStats();
+  addLog(`Equipped: ${it.icon} ${it.name}`, 'loot');
+  renderInv(); updateHUD(); saveProgress();
+}
+
+function unequipSlot(slot) {
+  const p = G.player;
+  const cur = p.equip[slot];
+  if (!cur) return;
+  if (G.player.inventory.length >= 12) {
+    setStrip('Bag is full!');
+    return;
+  }
+  G.player.inventory.push(cur);
+  p.equip[slot] = null;
+  recalcStats();
+  addLog(`Unequipped: ${ITEMS[cur].icon} ${ITEMS[cur].name}`,'info');
+  renderInv(); updateHUD(); saveProgress();
+}
+
+// ════════════════════════════════════════
+//  COMBAT — INLINE ON MAP
+// ════════════════════════════════════════
+function pickEnemyMove(enemy) {
+  const moves = enemy.moves;
+  const total = moves.reduce((s, m) => s + m.weight, 0);
+  let r = Math.random() * total;
+  for (const m of moves) {
+    r -= m.weight;
+    if (r <= 0) return m;
+  }
+  return moves[0];
+}
+
+// Spawn floating text anchored to a map tile
+function spawnFloatOnTile(text, tileX, tileY, color) {
+  const wrap = document.getElementById('map-wrap');
+  const rect = wrap.getBoundingClientRect();
+  const screenX = rect.left + (tileX * TILE * camScale) - wrap.scrollLeft + (TILE * camScale / 2) - 16;
+  const screenY = rect.top  + (tileY * TILE * camScale) - wrap.scrollTop  + (TILE * camScale / 2) - 16;
+  const el = document.createElement('div');
+  el.className = 'dmg-float';
+  el.textContent = text;
+  el.style.color = color || '#e87070';
+  el.style.left = screenX + 'px';
+  el.style.top  = screenY + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+// ═════════════════════════════
+//  ENEMIES' TURN — replaces tickEnemyAI + enemyAttack
+// ═════════════════════════════
+function enemiesTakeTurn() {
+  const p = G.player;
+  // When the player is a spirit, the living cannot see or attack them
+  const playerInvisibleToLiving = p.isSpirit;
+  // Alpha-pack-call: if pack leader sees player, nearby wolves boost their sight
+  const alphaSeesPlayer = !playerInvisibleToLiving && G.enemies.some(e =>
+    e.alive && e.type === 'wolf2' && e.ai && dist(e.x, e.y, p.x, p.y) <= (e.ai.sight || 0)
+  );
+
+  // Tick each enemy's status effects first (poison/bleed do damage), then act
+  G.enemies.forEach(enemy => {
+    if (!enemy.alive || !enemy.ai) return;
+
+    // Status tick on enemy
+    const events = tickStatuses(enemy, enemy.name);
+    events.forEach(ev => addLog(ev, 'enemy'));
+    if (enemy.hp <= 0) {
+      killEnemy(enemy);
+      return;
+    }
+
+    // Regen for troll
+    if (enemy.regen && enemy.hp > 0 && enemy.hp < enemy.maxHp) {
+      enemy.hp = Math.min(enemy.maxHp, enemy.hp + enemy.regen);
+    }
+
+    // Stunned enemies skip
+    if (hasStatus(enemy, 'stun')) {
+      addLog(`${enemy.name} is stunned!`, 'enemy');
+      enemy.nextMove = pickEnemyMove(enemy);
+      return;
+    }
+
+    // When player is a spirit, the living cannot perceive them at all.
+    if (playerInvisibleToLiving) {
+      enemy.attackReady = false;
+      enemy.nextMove = null;
+      // Optionally wander when idle
+      if (enemy.ai.wander && Math.random() < 0.3) {
+        wanderStep(enemy);
+      } else if (enemy.aiState === 'chasing') {
+        // Return home
+        stepToward(enemy, enemy.homeX, enemy.homeY);
+        if (dist(enemy.x, enemy.y, enemy.homeX, enemy.homeY) <= 1) {
+          enemy.aiState = 'idle';
+        }
+      }
+      return;
+    }
+
+    // If orthogonally adjacent: execute the previously-telegraphed move
+    if (dist(enemy.x, enemy.y, p.x, p.y) === 1) {
+      // If no telegraphed move (just got adjacent), pick & telegraph for NEXT turn
+      if (!enemy.nextMove || !enemy.attackReady) {
+        enemy.nextMove = pickEnemyMove(enemy);
+        enemy.attackReady = true; // attack next turn
+        addLog(`${enemy.name} prepares: ${enemy.nextMove.name}.`, 'enemy');
+        return;
+      }
+      // Execute attack
+      enemyExecuteMove(enemy, enemy.nextMove);
+      // Pick next move for next turn's telegraph
+      enemy.nextMove = pickEnemyMove(enemy);
+      enemy.attackReady = true;
+      return;
+    } else {
+      enemy.attackReady = false;
+    }
+
+    // Not adjacent — move per AI behavior
+    const ai = enemy.ai;
+    const distToPlayer = dist(enemy.x, enemy.y, p.x, p.y);
+    const distToHome   = dist(enemy.x, enemy.y, enemy.homeX, enemy.homeY);
+    let sight = ai.sight || 0;
+    if (alphaSeesPlayer && enemy.type === 'wolf') sight = Math.max(sight, 10);
+    if (p.sprintingTrace) sight += 2;
+    const canSeePlayer = distToPlayer <= sight;
+
+    if (canSeePlayer) {
+      if (ai.aggro === 'keep_distance' && ai.preferredDist) {
+        // Try to maintain preferred distance
+        if (distToPlayer < ai.preferredDist) {
+          const moves = ai.speed || 1;
+          for (let i = 0; i < moves; i++) {
+            if (chebyshev(enemy.x, enemy.y, p.x, p.y) <= 1) break;
+            if (!stepAway(enemy, p.x, p.y)) break;
+          }
+        } else if (distToPlayer > ai.preferredDist) {
+          const moves = ai.speed || 1;
+          for (let i = 0; i < moves; i++) {
+            if (chebyshev(enemy.x, enemy.y, p.x, p.y) <= 1) break;
+            if (dist(enemy.x, enemy.y, p.x, p.y) <= ai.preferredDist) break;
+            if (!stepToward(enemy, p.x, p.y)) break;
+          }
+        }
+        enemy.aiState = 'chasing';
+      } else if (ai.aggro === 'guard') {
+        const playerInTerritory =
+          (ai.territory === 'camp' && G.map[p.y][p.x] === T.CAMP) ||
+          (ai.territory === 'cave' && G.map[p.y][p.x] === T.CAVE);
+        if (playerInTerritory || distToPlayer <= 4) {
+          const moves = ai.speed || 1;
+          for (let i = 0; i < moves; i++) {
+            if (chebyshev(enemy.x, enemy.y, p.x, p.y) <= 1) break;
+            if (!stepToward(enemy, p.x, p.y)) break;
+          }
+          enemy.aiState = 'chasing';
+        }
+      } else {
+        // hunt
+        const moves = ai.speed || 1;
+        for (let i = 0; i < moves; i++) {
+          if (chebyshev(enemy.x, enemy.y, p.x, p.y) <= 1) break;
+          if (!stepToward(enemy, p.x, p.y)) break;
+        }
+        enemy.aiState = 'chasing';
+      }
+    } else {
+      // Lost sight — return home or wander
+      if (enemy.aiState === 'chasing' && distToHome > 1) {
+        stepToward(enemy, enemy.homeX, enemy.homeY);
+        if (dist(enemy.x, enemy.y, enemy.homeX, enemy.homeY) <= 1) {
+          enemy.aiState = 'idle';
+        }
+      } else if (ai.wander && Math.random() < 0.4) {
+        wanderStep(enemy);
+        enemy.aiState = 'idle';
+      }
+    }
+
+    // If after move enemy is now orthogonally adjacent, queue telegraph for next turn
+    if (dist(enemy.x, enemy.y, p.x, p.y) === 1) {
+      enemy.nextMove = pickEnemyMove(enemy);
+      enemy.attackReady = true;
+      addLog(`${enemy.name} closes — ${enemy.nextMove.name} incoming!`, 'enemy');
+    }
+  });
+}
+
+// Spirits act only when player is in the spirit realm
+function spiritsTakeTurn() {
+  if (!G.player.inSpiritRealm) return;
+  const p = G.player;
+  G.spirits.forEach(s => {
+    if (!s.alive) return;
+    // Status tick
+    const events = tickStatuses(s, s.name);
+    events.forEach(ev => addLog(ev, 'enemy'));
+    if (s.hp <= 0) { killSpirit(s); return; }
+    if (hasStatus(s, 'stun')) { addLog(`${s.name} is stunned!`, 'enemy'); return; }
+
+    if (dist(s.x, s.y, p.x, p.y) === 1) {
+      // Orthogonally adjacent — attack
+      const baseAtk = rand(Math.floor(s.atk * 0.8), Math.floor(s.atk * 1.2));
+      // Spirit attacks bypass shield (they strike the soul) but armor reduces
+      const dmg = Math.max(1, baseAtk - Math.floor(p.def * 0.3));
+      p.hp -= dmg;
+      spawnFloatOnTile(`-${dmg}`, p.x, p.y, '#b070d8');
+      addLog(`${s.name} strikes your spirit! HP -${dmg}.`, 'enemy');
+      return;
+    }
+    // Move toward player if within sight (8 tiles)
+    if (dist(s.x, s.y, p.x, p.y) <= 8) {
+      for (let i = 0; i < 1; i++) {
+        if (chebyshev(s.x, s.y, p.x, p.y) <= 1) break;
+        // Spirits ignore terrain blocks (water/walls), only blocked by other spirits/player
+        const tryStep = (ddx, ddy) => {
+          const nx = s.x + ddx, ny = s.y + ddy;
+          if (nx < 0 || nx >= MW || ny < 0 || ny >= MH) return false;
+          if (G.spirits.some(other => other !== s && other.alive && other.x === nx && other.y === ny)) return false;
+          if (p.x === nx && p.y === ny) return false;
+          s.x = nx; s.y = ny;
+          return true;
+        };
+        const dxs = Math.sign(p.x - s.x), dys = Math.sign(p.y - s.y);
+        if (Math.abs(p.x - s.x) >= Math.abs(p.y - s.y)) {
+          if (!tryStep(dxs, 0)) tryStep(0, dys);
+        } else {
+          if (!tryStep(0, dys)) tryStep(dxs, 0);
+        }
+      }
+    }
+  });
+}
+
+// Execute one enemy move against the player
+function enemyExecuteMove(enemy, move) {
+  const p = G.player;
+
+  if (move.heal) {
+    const healAmt = Math.floor(enemy.maxHp * move.heal);
+    enemy.hp = Math.min(enemy.maxHp, enemy.hp + healAmt);
+    addLog(`${enemy.name} uses ${move.name}! Heals ${healAmt}.`, 'enemy');
+    spawnFloatOnTile(`+${healAmt}`, enemy.x, enemy.y, '#7de87a');
+    return;
+  }
+  if (move.selfBuff) {
+    applyStatus(enemy, move.selfBuff, 4);
+    addLog(`${enemy.name} uses ${move.name}! Enraged.`, 'enemy');
+    spawnFloatOnTile('ENRAGE', enemy.x, enemy.y, '#ff6020');
+    return;
+  }
+
+  let baseAtk = rand(Math.floor(enemy.atk * 0.85), Math.floor(enemy.atk * 1.15));
+  baseAtk = Math.floor(baseAtk * (move.dmgMult || 1));
+  if (hasStatus(enemy, 'enrage')) baseAtk = Math.floor(baseAtk * 1.4);
+
+  // Miss check (enemy's own miss chance)
+  if (move.missChance && Math.random() < move.missChance) {
+    addLog(`${enemy.name} ${move.name} — misses!`, 'enemy');
+    spawnFloatOnTile('MISS', p.x, p.y, '#b0b0b0');
+    return;
+  }
+  // Dodge check
+  if (p.dodgeChance && Math.random() < p.dodgeChance) {
+    addLog(`You dodge ${enemy.name}'s ${move.name}!`, 'player');
+    spawnFloatOnTile('DODGE', p.x, p.y, '#a0e0ff');
+    return;
+  }
+
+  let shieldAbsorbRate = p.braced ? 0.85 : 0.5;
+  if (move.ignoreShield) shieldAbsorbRate *= 0.3;
+  if (p.shieldMax === 0) shieldAbsorbRate = 0;
+
+  let dmg = baseAtk;
+  const sa = Math.min(p.shield, Math.floor(dmg * shieldAbsorbRate));
+  dmg -= sa;
+  p.shield = Math.max(0, p.shield - sa);
+  const armorReduce = p.braced ? Math.floor(p.def * 0.7) : Math.floor(p.def * 0.45);
+  dmg = Math.max(1, dmg - armorReduce);
+  p.hp -= dmg;
+
+  spawnFloatOnTile(`-${dmg}`, p.x, p.y, '#c03030');
+  const tag = move.heavy ? '💥 ' : '';
+  addLog(`${tag}${enemy.name} ${move.name}! Shield -${sa}, HP -${dmg}.`, 'enemy');
+
+  if (move.inflict) {
+    if (move.stunChance && Math.random() > move.stunChance) {
+      // chance failed
+    } else {
+      const turns = move.inflict === 'stun' ? 1 : 3;
+      applyStatus(p, move.inflict, turns);
+      const sname = STATUSES[move.inflict]?.name || move.inflict;
+      addLog(`You are afflicted with ${sname}!`, 'enemy');
+    }
+  }
+}
+
+
+// ════════════════════════════════════════
+//  LOG
+// ════════════════════════════════════════
+function addLog(text,type=''){
+  setStrip(text);
+  const log=document.getElementById('log-inner');
+  const d=document.createElement('div');d.className='le '+type;d.textContent=text;
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+  while(log.children.length>80)log.removeChild(log.firstChild);
+}
+function setStrip(t){document.getElementById('log-strip').textContent=t;}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.getElementById('tb-'+name).classList.add('active');
+}
+
+// SWIPE
+let sw={x:0,y:0};
+const mwEl=document.getElementById('map-wrap');
+mwEl.addEventListener('touchstart',e=>{if(G.gameOver)return;sw={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+mwEl.addEventListener('touchend',e=>{
+  if(G.gameOver)return;
+  const dx=e.changedTouches[0].clientX-sw.x,dy=e.changedTouches[0].clientY-sw.y;
+  const ax=Math.abs(dx),ay=Math.abs(dy);
+  if(Math.max(ax,ay)<20)return;
+  if(ax>ay)tryMove(dx>0?1:-1,0); else tryMove(0,dy>0?1:-1);
+},{passive:true});
+
+// KEYBOARD
+document.addEventListener('keydown',e=>{
+  if(G.gameOver)return;
+  const m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],w:[0,-1],s:[0,1],a:[-1,0],d:[1,0],W:[0,-1],S:[0,1],A:[-1,0],D:[1,0]};
+  if(m[e.key]) { dp(...m[e.key]); return; }
+  if(e.key==='Escape') cancelAction();
+  if(e.key==='1') armAction('thrust');
+  if(e.key==='2') armAction('bash');
+  if(e.key==='3') armAction('feint');
+  if(e.key==='4') armAction('sprint');
+  if(e.key==='b'||e.key==='B') doBrace();
+  if(e.key==='.') doWait();
+  if(e.key==='r'||e.key==='R') doRest();
+  if(e.key==='c'||e.key==='C') doScout();
+  if(e.key==='q'||e.key==='Q') quickPotion();
+});
+
+// ════════════════════════════════════════
+//  END SCREEN
+// ════════════════════════════════════════
+function showEnd(victory){
+  G.gameOver=true;
+  const cs = document.getElementById('combat-screen');
+  if (cs) cs.style.display='none';
+  document.getElementById('game-main').style.display='none';
+  clearProgress();
+  if(victory){
+    const hb=Math.floor(G.player.hp/G.player.maxHp*50);
+    G.gloryLog.push({label:'HP remaining bonus',val:hb}); G.glory+=hb;
+    const turnBonus = Math.max(0, 200 - G.turn*2);
+    if (turnBonus > 0) {
+      G.gloryLog.push({label:'Swift completion',val:turnBonus}); G.glory+=turnBonus;
+    }
+    G.gloryLog.push({label:'Quest complete',val:150}); G.glory+=150;
+    const diffBonus = G.difficulty === 'nightmare' ? 300 : G.difficulty === 'hard' ? 150 : 0;
+    if (diffBonus > 0) {
+      G.gloryLog.push({label:DIFFICULTY[G.difficulty].name+' bonus', val:diffBonus});
+      G.glory+=diffBonus;
+    }
+  }
+  if(G.restCount>4){
+    const pen=(G.restCount-4)*8;
+    G.gloryLog.push({label:'Rested too often',val:-pen});
+    G.glory=Math.max(0,G.glory-pen);
+  }
+
+  // Update meta
+  loadMeta();
+  let isRecord = false;
+  if (G.glory > (META.highScore || 0)) {
+    META.highScore = G.glory;
+    META.highScoreDiff = G.difficulty;
+    isRecord = true;
+  }
+  if (victory) META.completions = (META.completions || 0) + 1;
+  saveMeta();
+
+  const end=document.getElementById('end-screen'); end.style.display='flex';
+  const title=document.getElementById('end-title');
+  title.textContent = victory ? '⚔ VICTORY ⚔' : '☠ DEFEATED ☠';
+  title.className='end-title '+(victory?'v':'d');
+  document.getElementById('end-glory').textContent=G.glory;
+  document.getElementById('end-record').style.display = isRecord ? 'block' : 'none';
+  const bd=document.getElementById('breakdown');
+  bd.innerHTML='<div style="font-family:Cinzel,serif;font-size:.65rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.35rem">Glory Breakdown · '+DIFFICULTY[G.difficulty].name+'</div>';
+  G.gloryLog.forEach(r=>{const d=document.createElement('div');d.className='gl-row';d.innerHTML=`<span>${r.label}</span><span class="v">${r.val>=0?'+':''}${r.val}</span>`;bd.appendChild(d);});
+  const tot=document.createElement('div');tot.className='gl-row gl-total';
+  tot.innerHTML=`<span>Total Glory</span><span class="v">${G.glory}</span>`;bd.appendChild(tot);
+  const ev=[
+    `Aldric returns to the mead-hall. Bards sing of his glory: ${G.glory}.`,
+    `The Troll's head hangs at the gate. Children whisper Aldric's name.`,
+    `Peace returns to Greywood. The spear rests above the hearth.`
+  ];
+  const dv=[
+    `Aldric's spear was found by the river, alone. The forest kept his bones.`,
+    `None returned that season. Candles burn for the fallen.`,
+    `A worthy warrior felled too soon. His glory echoes in the stones.`
+  ];
+  document.getElementById('end-epitaph').textContent=(victory?ev:dv)[Math.floor(Math.random()*3)];
+}
+
+function goToTitle(){
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('title-screen').style.display='flex';
+  refreshTitle();
+}
+
+// ════════════════════════════════════════
+//  INIT / START
+// ════════════════════════════════════════
+function newGameState(diff, cls){
+  const c = CLASSES[cls || 'warrior'];
+  return {
+    map: genMap(),
+    enemies: [],
+    chests: [],
+    spirits: [], // spawned on demand when player enters spirit realm
+    player: {
+      x:14, y:15,
+      hp:c.hp, maxHp:c.hp,
+      shield:c.shield, shieldMax:c.shield,
+      stamina:c.stam, stamMax:c.stam,
+      atk:c.atk, def:0,
+      baseAtk:c.atk, baseDef:0,
+      equip:{ weapon:c.weapon, shield:c.shieldItem, armor:c.armor },
+      inventory:[...c.startInv],
+      braced:false, tempAtkBuff:0, tempDefBuff:0,
+      feintSet: false,
+      statuses: {},
+      stamModBrace: 0, stamModWeapon: 0,
+      dodgeChance: 0, bloodlust:false, regenPerTurn:0,
+      weaponTrait:'pierce', weaponCrit:0.15,
+      // Spirit / class systems
+      class: cls || 'warrior',
+      spiritVision: c.spiritVision,
+      spiritVisionTurns: 0,        // 0 = permanent if spiritVision is true, else countdown
+      inSpiritRealm: false,
+      isSpirit: false,             // becomes true on death if has vision
+      spiritSlots: c.spiritSlots,
+      boundSpirits: [],            // array of spirit type keys
+      spellCooldowns: {},          // power key -> turns remaining
+      hexTouch: false,
+      warcry: false,
+    },
+    glory:0, gloryLog:[], killCount:0, restCount:0, turn:1,
+    bossKilled:false, gameOver:false,
+    armed: null,
+    armedSpell: null,
+    difficulty: diff || 'hard',
+    scouted: false,
+  };
+}
+
+function startGame(){
+  G = newGameState(currentDiff, currentClass);
+  G.enemies = placeEnemies(G.map);
+  G.chests = placeChests(G.map);
+  // Shaman gets one random familiar spirit (active spell)
+  if (G.player.class === 'shaman') {
+    const familiars = ['ember_wisp','guardian_wisp','mending_wisp'];
+    const pick = familiars[Math.floor(Math.random() * familiars.length)];
+    G.player.boundSpirits.push(pick);
+  }
+  applyBoundSpirits();
+  document.getElementById('title-screen').style.display='none';
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('game-main').style.display='flex';
+  setupCanvas();
+  recalcStats();
+  // Wire up gear-tab cards to unequip on tap
+  const cards = document.querySelectorAll('#gear-inner .eq-card');
+  const slots = ['weapon','shield','armor'];
+  cards.forEach((c, i) => {
+    c.onclick = () => {
+      if (G.gameOver) return;
+      const slot = slots[i];
+      if (G.player.equip[slot]) {
+        unequipSlot(slot);
+      } else {
+        setStrip('Tap an item in your Bag to equip it.');
+      }
+    };
+    c.style.cursor = 'pointer';
+  });
+  renderInv(); updateHUD(); drawMap();
+  const cls = CLASSES[G.player.class];
+  addLog(`${cls.icon} ${cls.name} enters the Greywood — ${DIFFICULTY[G.difficulty].name} mode.`,'info');
+  if (G.player.class === 'shaman') {
+    addLog('You see beyond the veil. Press 🌀 Realm to cross over.','info');
+    addLog('Defeat spirits to bind them (4 slots). Each grants a power.','info');
+  } else {
+    addLog('Tap an action, then a direction. Walking into a foe is blocked — Thrust!','info');
+  }
+  setStrip('Tap an action → tap a direction. Or just move.');
+  saveProgress();
+  startPulseLoop();
+}
+
+let pulseLoopId = null;
+function startPulseLoop() {
+  if (pulseLoopId) cancelAnimationFrame(pulseLoopId);
+  function loop() {
+    if (G.gameOver) return;
+    // Only redraw if there's something animated worth redrawing
+    const hasPulser = G.enemies && G.enemies.some(e =>
+      e.alive && chebyshev(e.x, e.y, G.player.x, G.player.y) === 1 && e.attackReady
+    );
+    if (hasPulser) drawMap();
+    pulseLoopId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function continueGame(){
+  const save = loadProgress();
+  if (!save) return;
+  const savedClass = save.player?.class || 'warrior';
+  G = newGameState(save.difficulty, savedClass);
+  G.map = save.map;
+  G.player = save.player;
+  // Forward-compat
+  if (G.player.stamina === undefined) { G.player.stamina = 10; G.player.stamMax = 10; }
+  if (!G.player.statuses) G.player.statuses = {};
+  if (!G.player.equip) G.player.equip = { weapon:'iron_spear', shield:'wooden_shield', armor:'leather_armor' };
+  if (G.player.equip.armor && ITEMS[G.player.equip.armor] && ITEMS[G.player.equip.armor].type === 'shield') {
+    G.player.equip.shield = G.player.equip.armor;
+    G.player.equip.armor = 'leather_armor';
+  }
+  if (G.player.equip.shield === undefined) G.player.equip.shield = 'wooden_shield';
+  ['weapon','shield','armor'].forEach(slot => {
+    if (G.player.equip[slot] && !ITEMS[G.player.equip[slot]]) G.player.equip[slot] = null;
+  });
+  G.player.tempAtkBuff = G.player.tempAtkBuff || 0;
+  G.player.tempDefBuff = G.player.tempDefBuff || 0;
+  // Spirit fields
+  if (!G.player.class) G.player.class = 'warrior';
+  if (G.player.spiritVision === undefined) G.player.spiritVision = !!CLASSES[G.player.class]?.spiritVision;
+  if (G.player.spiritVisionTurns === undefined) G.player.spiritVisionTurns = 0;
+  if (G.player.inSpiritRealm === undefined) G.player.inSpiritRealm = false;
+  if (G.player.isSpirit === undefined) G.player.isSpirit = false;
+  if (G.player.spiritSlots === undefined) G.player.spiritSlots = CLASSES[G.player.class]?.spiritSlots || 0;
+  if (!Array.isArray(G.player.boundSpirits)) G.player.boundSpirits = [];
+  if (!G.player.spellCooldowns) G.player.spellCooldowns = {};
+  G.glory = save.glory || 0;
+  G.gloryLog = save.gloryLog || [];
+  G.killCount = save.killCount || 0;
+  G.restCount = save.restCount || 0;
+  G.turn = save.turn || 1;
+  G.bossKilled = save.bossKilled || false;
+  G.difficulty = save.difficulty || 'hard';
+  G.enemies = placeEnemies(G.map);
+  if (save.enemies) {
+    save.enemies.forEach((se, i) => {
+      if (G.enemies[i] && G.enemies[i].type === se.type) {
+        G.enemies[i].hp = se.hp;
+        G.enemies[i].alive = se.alive;
+      }
+    });
+  }
+  // Restore spirits
+  G.spirits = [];
+  if (save.spirits) {
+    save.spirits.forEach(ss => {
+      spawnSpirit(ss.type, ss.x, ss.y, false);
+      const sp = G.spirits[G.spirits.length - 1];
+      if (sp) { sp.hp = ss.hp; sp.alive = ss.alive; }
+    });
+  }
+  G.chests = save.chests || placeChests(G.map);
+  document.getElementById('title-screen').style.display='none';
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('game-main').style.display='flex';
+  setupCanvas();
+  recalcStats();
+  // Bind gear cards
+  const cards = document.querySelectorAll('#gear-inner .eq-card');
+  const slots = ['weapon','shield','armor'];
+  cards.forEach((c, i) => {
+    c.onclick = () => {
+      if (G.gameOver) return;
+      const slot = slots[i];
+      if (G.player.equip[slot]) unequipSlot(slot);
+      else setStrip('Tap an item in your Bag to equip it.');
+    };
+    c.style.cursor = 'pointer';
+  });
+  renderInv(); updateHUD(); drawMap();
+  addLog(`⚔ The saga resumes... Turn ${G.turn}.`,'info');
+  setStrip('The journey continues.');
+  startPulseLoop();
+}
+
+window.addEventListener('resize',()=>{if(G.map){setupCanvas();drawMap();}});
+
+// Init title on load
+refreshTitle();
+</script>
+</body>
+</html>
