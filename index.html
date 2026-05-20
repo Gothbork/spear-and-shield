@@ -45,10 +45,10 @@ html, body {
   position: fixed; inset: 0;
   background: radial-gradient(ellipse at 50% 38%, #1e0e02 0%, #030200 100%);
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  align-items: center; justify-content: flex-start;
   z-index: 200;
-  padding: 1.5rem 1.4rem;
-  padding-top: calc(1.5rem + var(--safe-t));
+  padding: 2.5rem 1.4rem 1.5rem;
+  padding-top: calc(2.5rem + var(--safe-t));
   padding-bottom: calc(1.5rem + var(--safe-b));
   overflow-y: auto;
 }
@@ -82,12 +82,13 @@ html, body {
 }
 .btn-gold {
   font-family: 'Cinzel', serif; font-weight: 700;
-  font-size: clamp(0.95rem, 4.5vw, 1.15rem);
-  letter-spacing: 0.12em; text-transform: uppercase;
+  font-size: clamp(0.8rem, 3.6vw, 1.05rem);
+  letter-spacing: 0.07em; text-transform: uppercase;
   color: var(--ink);
   background: linear-gradient(135deg, var(--gold-light), var(--gold));
   border: none; cursor: pointer;
-  padding: 0.8rem 2.4rem;
+  padding: 0.8rem 1.6rem;
+  white-space: nowrap;
   clip-path: polygon(10px 0%,calc(100% - 10px) 0%,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0% calc(100% - 10px),0% 10px);
   transition: transform 0.12s;
   min-height: 50px; min-width: 200px;
@@ -235,21 +236,33 @@ html, body {
 
 #telegraph-banner {
   display: none;
-  position: absolute; top: 2.4rem; left: 50%;
+  position: absolute; top: 2.6rem; left: 50%;
   transform: translateX(-50%);
-  background: rgba(20,5,0,.85);
-  border: 1px solid #ff9040;
-  color: #ff9040;
-  padding: 0.25rem 0.7rem;
-  border-radius: 3px;
-  font-family: 'Cinzel', serif; font-size: 0.7rem;
-  letter-spacing: 0.04em; max-width: 90%;
-  text-align: center;
-  pointer-events: none; z-index: 5;
-  box-shadow: 0 0 12px rgba(255,144,64,.4);
+  background: linear-gradient(180deg, rgba(60,12,8,.96), rgba(30,6,4,.96));
+  border: 2px solid #ff3020;
+  color: #ffb0a0;
+  padding: 0.4rem 0.9rem;
+  border-radius: 5px;
+  font-family: 'Cinzel', serif; font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em; max-width: 92%;
+  text-align: center; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none; z-index: 6;
+  box-shadow: 0 0 18px rgba(255,48,32,.6);
+  animation: telegraphThrob 0.9s ease-in-out infinite;
+}
+@keyframes telegraphThrob {
+  0%,100% { box-shadow: 0 0 14px rgba(255,48,32,.45); }
+  50%     { box-shadow: 0 0 24px rgba(255,48,32,.85); }
 }
 #telegraph-banner.show { display: block; }
-#telegraph-banner.weak { border-color: #b070d8; color: #d4a0f0; box-shadow: 0 0 12px rgba(176,112,216,.4); }
+#telegraph-banner.weak {
+  border-color: #c9922a; color: #f0d49a;
+  background: linear-gradient(180deg, rgba(50,36,8,.96), rgba(28,20,4,.96));
+  box-shadow: 0 0 14px rgba(201,146,42,.5);
+  animation: none;
+}
 
 #bottom-panel {
   background: linear-gradient(0deg, #080500 0%, #100900 100%);
@@ -761,7 +774,15 @@ html, body {
   <div style="font-size:0.78rem; line-height:1.55; color:#c4a97a; margin-bottom: 0.8rem;">
     <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🎯 Two-tap combat</b> — Tap 🗡️ Thrust / 🛡 Bash / ✦ Feint / 💨 Sprint to <i>arm</i> it (button glows gold; the four neighbor tiles light up). Then tap a direction on the D-pad to commit. Tap the ✦ center to cancel.</p>
     <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">🚶 Walking into a foe is blocked</b> — Use Thrust or Bash to attack a tile.</p>
-    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">⏳ Turn-based</b> — Every action (move, attack, brace, wait) ends your turn. Enemies then move and attack. Adjacent enemies <i>telegraph</i> their next strike (red pulsing border + text banner) — Brace the heavy ones.</p>
+    <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">⏳ Turn-based</b> — Every action (move, attack, brace, wait) ends your turn. Enemies then move and attack. When a foe is ready to strike, a glowing ring and an <b>intent badge</b> appear on it, plus a banner at the top of the map.</p>
+    <p style="margin-bottom:0.3rem; padding-left:0.7rem; font-size:0.74rem">
+      ⚠ <b style="color:#ff3020">Heavy attack</b> — big damage. <b>Brace!</b><br>
+      ⚔ <b style="color:#ff8030">Normal attack</b> — standard hit.<br>
+      ☠ <b style="color:#a050ff">Poison</b> · 🩸 <b style="color:#c03050">Bleed</b> · 💫 <b style="color:#b070d8">Stun</b> — inflicts a status.<br>
+      🔥 <b style="color:#ffaa20">Enrage</b> — the foe is powering up.<br>
+      💚 <b style="color:#40c060">Heal</b> — the foe will mend itself; rush it down.
+    </p>
+    <p style="margin-bottom:0.4rem">A red <b>arrow</b> on the tile edge shows exactly which way a foe will strike.</p>
     <p style="margin-bottom:0.4rem"><b style="color:var(--gold-light)">⚔ Weapon Traits</b>:</p>
     <p style="margin-bottom:0.3rem; padding-left:0.7rem; font-size:0.74rem">
       🗡️ <b>Spear (pierce)</b> — Ignores 50% enemy DEF.<br>
@@ -838,7 +859,7 @@ html, body {
 // ════════════════════════════════════════
 //  CONSTANTS & DATA
 // ════════════════════════════════════════
-const TILE=28, MW=40, MH=30;
+const TILE=28, MW=60, MH=40;
 const T={DEEP:0,SHALLOW:1,SAND:2,GRASS:3,DGRASS:4,FOREST:5,DFOREST:6,STONE:7,CAMP:8,CAVE:9,WALL:10};
 const TCOL=['#1a3a6a','#2a5aa0','#c8b560','#4a8a30','#2d6020','#1e4a12','#122e08','#6a6058','#8b6040','#4a3828','#3a3230'];
 const SAVE_KEY = 'spearShield_v3';
@@ -880,6 +901,9 @@ const SPIRITS = {
   goblin2:  { name:'Shaman Wraith',       icon:'💀', hp:28, atk:14, glory:30, power:'hex',        desc:'Your Thrusts apply Poison.' },
   goblin3:  { name:'Warchief Phantom',    icon:'💀', hp:55, atk:15, glory:50, power:'warcry',     desc:'+4 ATK while above half HP.' },
   troll:    { name:'Grumrak\'s Shade',    icon:'💀', hp:130, atk:22, glory:150, power:'regen',    desc:'Regenerate 2 HP per turn.', boss:true },
+  fox:      { name:'Fox Spirit',          icon:'👻', hp:20, atk:7,  glory:12, power:'cunning_step', desc:'+2 stamina max.' },
+  raven:    { name:'Raven Spirit',        icon:'👻', hp:15, atk:6,  glory:10, power:'far_sight',  desc:'+2 scout/sight range.' },
+  bear:     { name:'Bear Shade',          icon:'💀', hp:90, atk:18, glory:90, power:'bear_might', desc:'+10 max HP and +2 ATK.' },
   // ── FAMILIAR SPIRITS (Shaman starting options) ──
   ember_wisp:   { name:'Ember Wisp',     icon:'🔥', hp:1, atk:0, glory:0, power:'bolt',  desc:'Spell: Fire Bolt — ranged damage.', familiar:true },
   guardian_wisp:{ name:'Guardian Wisp',  icon:'🛡', hp:1, atk:0, glory:0, power:'ward',  desc:'Spell: Ward — restore shield.',    familiar:true },
@@ -893,6 +917,10 @@ const SPIRIT_POWERS = {
   cunning:   { name:'Cunning',    icon:'👁', desc:'+10% crit', apply:(p)=>{ p.weaponCrit = (p.weaponCrit||0.15) + 0.1; } },
   hex:       { name:'Hex Touch',  icon:'☠', desc:'Thrusts apply Poison', flag:'hexTouch' },
   warcry:    { name:'War Cry',    icon:'⚔', desc:'+4 ATK above 50% HP', flag:'warcry' },
+  regen:     { name:'Trollblood', icon:'🩸', desc:'Regen 2 HP/turn', apply:(p)=>{ p.regenPerTurn = (p.regenPerTurn||0) + 2; } },
+  cunning_step:{ name:'Cunning Step', icon:'🦊', desc:'+2 max stamina', apply:(p)=>{ p.stamMax += 2; p.stamina += 2; } },
+  far_sight: { name:'Far Sight', icon:'🪶', desc:'Scout reveals further', flag:'farSight' },
+  bear_might:{ name:'Bear Might', icon:'🐻', desc:'+10 max HP, +2 ATK', apply:(p)=>{ p.maxHp += 10; p.hp += 10; p.atk += 2; } },
   regen:     { name:'Trollblood', icon:'🩸', desc:'Regen 2 HP/turn', apply:(p)=>{ p.regenPerTurn = (p.regenPerTurn||0) + 2; } },
   // Active spells — castable from the action bar
   bolt: {
@@ -967,6 +995,10 @@ const ITEMS={
   troll_heart:      {name:'Troll Heart',     icon:'❤️‍🩹',type:'trophy', glory:80,              desc:'Trophy · Sell for 80 glory'},
   gold_coins:       {name:'Gold Coins',      icon:'🪙',type:'trophy',   glory:15,              desc:'Trophy · Sell for 15 glory'},
   gem:              {name:'Ruby',            icon:'💎',type:'trophy',   glory:35,              desc:'Trophy · Sell for 35 glory'},
+  fox_tail:         {name:'Fox Tail',        icon:'🦊',type:'trophy',   glory:12,              desc:'Trophy · Sell for 12 glory'},
+  raven_feather:    {name:'Raven Feather',   icon:'🪶',type:'trophy',   glory:8,               desc:'Trophy · Sell for 8 glory'},
+  bear_claw:        {name:'Bear Claw',       icon:'🐾',type:'trophy',   glory:30,              desc:'Trophy · Sell for 30 glory'},
+  bear_pelt:        {name:'Bear Pelt',       icon:'🟫',type:'trophy',   glory:45,              desc:'Trophy · Sell for 45 glory'},
 };
 
 // Each enemy has a moveset with telegraphed attacks
@@ -1038,6 +1070,40 @@ function mkEnemy(type,x,y){
         { id:'feast',    name:'Bite & Devour', dmgMult:0.9, weight:15, telegraph:'Grumrak gnashes its yellow teeth...', heal:0.1, inflict:'bleed' },
       ]
     },
+    // ── DEEP FOREST (west) ──
+    fox: {
+      name:'Red Fox', icon:'🦊', hp:22, atk:8, def:1, glory:16,
+      loot:['fox_tail','iron_ration',null],
+      ai: { sight:4, speed:1, aggro:'hunt', wander:true, territory:null },
+      moves:[
+        { id:'bite', name:'Snap',  dmgMult:0.9, weight:55, telegraph:'The fox bares its teeth...' },
+        { id:'dart', name:'Quick Dart', dmgMult:1.2, weight:25, telegraph:'⚠ The fox darts in!', heavy:true },
+        { id:'rend', name:'Quick Bite', dmgMult:0.6, weight:20, telegraph:'The fox circles for a quick bite...', inflict:'bleed' },
+      ]
+    },
+    raven: {
+      name:'Crow', icon:'🐦‍⬛', hp:16, atk:7, def:0, glory:14,
+      loot:['raven_feather',null,'iron_ration'],
+      ai: { sight:6, speed:1, aggro:'hunt', wander:true, territory:null, flying:true },
+      moves:[
+        { id:'peck',  name:'Beak Peck', dmgMult:1.0, weight:50, telegraph:'The crow caws and dives...' },
+        { id:'eyes',  name:'Eye Strike', dmgMult:1.3, weight:30, telegraph:'⚠ The crow aims for your eyes!', heavy:true, missChance:0.25 },
+        { id:'flock', name:'Murder Cry', dmgMult:0, weight:20, telegraph:'The crow shrieks — calling its kin...', selfBuff:'enrage' },
+      ]
+    },
+    bear: {
+      name:'Great Bear', icon:'🐻', hp:140, atk:22, def:7, glory:140,
+      loot:['bear_claw','bear_pelt','greater_potion','two_handed_axe'],
+      regen:2, semiboss:true,
+      ai: { sight:6, speed:1, aggro:'guard', wander:false, territory:'glade' },
+      moves:[
+        { id:'swipe', name:'Swipe',    dmgMult:1.0, weight:35, telegraph:'The bear raises a paw...' },
+        { id:'maul',  name:'Maul',     dmgMult:1.7, weight:25, telegraph:'⚠ The bear rears up to maul!', heavy:true, inflict:'bleed' },
+        { id:'crush', name:'Body Slam',dmgMult:1.3, weight:20, telegraph:'⚠ The bear lurches forward!', heavy:true, inflict:'stun', stunChance:0.4 },
+        { id:'roar',  name:'Mighty Roar', dmgMult:0, weight:10, telegraph:'The bear rears back to roar...', selfBuff:'enrage' },
+        { id:'bite',  name:'Crushing Bite', dmgMult:1.1, weight:10, telegraph:'The bear lunges with its jaws...' },
+      ]
+    },
   };
   const d=D[type];
   const diff = DIFFICULTY[G.difficulty || 'hard'];
@@ -1056,40 +1122,53 @@ function mkEnemy(type,x,y){
 }
 
 const CHEST_POS=[
-  // Forest zone
-  [17, 5],   // light loot near entrance
-  [24, 9],
-  [19, 12],
-  [29, 3],
-  [33, 8],
-  [16, 11],
-  // Camp zone
-  [26, 16],
-  [30, 19],
-  [37, 20],
-  [34, 14],
-  // Pre-cave / cave
-  [25, 24],
-  [35, 25],
-  [38, 28],
+  // West deep forest — early
+  [12, 6],
+  [22, 10],
+  [8, 12],
+  [18, 24],
+  [24, 31],
+  // Bear glade approach
+  [11, 22],
+  [6, 25],   // inside the glade — bear-themed
+  // Central path
+  [33, 18],
+  // East forest
+  [40, 5],
+  [52, 8],
+  [36, 12],
+  // Goblin camp
+  [44, 19],
+  [50, 22],
+  [55, 18],
+  // Troll cave
+  [48, 32],
+  [56, 36],
 ];
 const CHEST_ITEMS=[
-  // Forest chests — early game gear
+  // West deep forest
   ['healing_potion','whetstone','gold_coins'],
-  ['iron_ration','leather_armor','antidote','spirit_dust'],
-  ['short_sword','healing_potion'],
+  ['iron_ration','leather_armor','antidote'],
+  ['short_sword','spirit_dust','healing_potion'],
   ['mace','iron_ration','spirit_dust'],
   ['chain_mail','stamina_draught','gold_coins'],
-  ['wooden_shield','smoke_bomb'],
-  // Camp chests — mid-game
-  ['reinforced_shield','blessed_water','gem','spirit_vision_scroll'],
+  // Bear glade approach
+  ['wooden_shield','smoke_bomb','berserker_root'],
+  // INSIDE the glade — bear-themed reward chest
+  ['two_handed_axe','greater_potion','bear_pelt','ghost_offering'],
+  // Central path crossing
+  ['ghost_offering','spirit_vision_scroll','blessed_water'],
+  // East forest
+  ['reinforced_shield','blessed_water','gem'],
   ['steel_spear','healing_potion','antidote'],
-  ['scale_armor','berserker_root','gold_coins','ghost_offering'],
+  ['scale_armor','berserker_root','gold_coins'],
+  // Goblin camp
   ['longsword','whetstone','smoke_bomb'],
-  // Cave chests — endgame
-  ['two_handed_axe','greater_potion','berserker_root','ghost_offering'],
-  ['kite_shield','plate_armor','elixir_of_life','spirit_staff'],
-  ['greatsword','warhammer','cloak_of_shadows','gem','gold_coins'],
+  ['warhammer','greater_potion','antidote'],
+  ['kite_shield','plate_armor','elixir_of_life'],
+  // Troll cave endgame
+  ['greatsword','cloak_of_shadows','gem','gold_coins'],
+  ['spirit_staff','elixir_of_life','ancient_relic','gem'],
 ];
 
 // ════════════════════════════════════════
@@ -1202,20 +1281,85 @@ function wipeAll(){
 // ════════════════════════════════════════
 function genMap(){
   const m=Array.from({length:MH},()=>Array(MW).fill(T.GRASS));
-  let rx=8;
-  for(let y=0;y<MH;y++){
-    rx=Math.max(4,Math.min(12,rx+(Math.random()*3|0)-1));
-    for(let dx=-1;dx<=1;dx++){const cx=rx+dx;if(cx>=0&&cx<MW)m[y][cx]=dx===0?T.DEEP:T.SHALLOW;}
-    if(y%3===0&&rx>0)m[y][rx-2]=T.SAND;
-    if(y%3===1&&rx+2<MW)m[y][rx+2]=T.SAND;
+
+  // Main river runs vertically near the centre (around x=28-32)
+  let rx = 30;
+  for (let y = 0; y < MH; y++) {
+    rx = Math.max(28, Math.min(34, rx + (Math.random()*3|0) - 1));
+    for (let dx = -1; dx <= 1; dx++) {
+      const cx = rx + dx;
+      if (cx >= 0 && cx < MW) m[y][cx] = dx === 0 ? T.DEEP : T.SHALLOW;
+    }
+    if (y % 3 === 0 && rx > 0) m[y][rx-2] = T.SAND;
+    if (y % 3 === 1 && rx+2 < MW) m[y][rx+2] = T.SAND;
   }
-  for(let y=0;y<14;y++)for(let x=13;x<MW;x++){const r=Math.random();m[y][x]=r<.45?T.FOREST:r<.7?T.DGRASS:r<.75?T.DFOREST:T.GRASS;}
-  for(let y=14;y<22;y++)for(let x=22;x<MW;x++)m[y][x]=T.CAMP;
-  for(let x=22;x<MW;x++){m[14][x]=T.WALL;m[21][x]=T.WALL;}
-  for(let y=14;y<22;y++){m[y][22]=T.WALL;m[y][MW-1]=T.WALL;}
-  m[17][22]=T.CAMP;m[18][22]=T.CAMP;
-  for(let y=23;y<MH;y++)for(let x=28;x<MW;x++)m[y][x]=T.CAVE;
-  for(let y=1;y<MH-1;y++)if(m[y][15]!==T.DEEP&&m[y][15]!==T.SHALLOW)m[y][15]=T.STONE;
+
+  // ── WEST: Deep forest (foxes/ravens roam, bear at far west) ──
+  for (let y = 0; y < MH; y++) {
+    for (let x = 0; x < 28; x++) {
+      const r = Math.random();
+      // Denser closer to the edge
+      const density = 0.55 - (x / 60);
+      if (r < density) m[y][x] = T.DENSE_FOREST !== undefined ? T.DFOREST : T.FOREST;
+      else if (r < density + 0.25) m[y][x] = T.FOREST;
+      else if (r < density + 0.4) m[y][x] = T.DGRASS;
+      else m[y][x] = T.GRASS;
+    }
+  }
+
+  // A glade where the Great Bear roams — clearing of grass at far west
+  for (let y = 18; y < 26; y++) {
+    for (let x = 2; x < 9; x++) {
+      m[y][x] = T.GRASS;
+    }
+  }
+  // Stone ring around the glade
+  for (let x = 1; x <= 9; x++) { m[17][x] = T.STONE; m[26][x] = T.STONE; }
+  for (let y = 17; y <= 26; y++) { m[y][1] = T.STONE; m[y][9] = T.STONE; }
+  // Gap entrances
+  m[17][5] = T.GRASS; m[26][5] = T.GRASS;
+  m[21][1] = T.GRASS; m[22][1] = T.GRASS;
+
+  // ── EAST: original forest, goblin camp, troll cave (offset by river position) ──
+  // Original forest zone was 0-13y, 13-MW. River was around x=8-12. Now river is around x=30.
+  // So east of river: x=33..MW
+  for (let y = 0; y < 16; y++) {
+    for (let x = 33; x < MW; x++) {
+      const r = Math.random();
+      if (r < 0.45) m[y][x] = T.FOREST;
+      else if (r < 0.7) m[y][x] = T.DGRASS;
+      else if (r < 0.75) m[y][x] = T.DFOREST;
+      else m[y][x] = T.GRASS;
+    }
+  }
+
+  // Goblin camp (mid-east)
+  for (let y = 16; y < 26; y++) {
+    for (let x = 40; x < MW; x++) {
+      m[y][x] = T.CAMP;
+    }
+  }
+  for (let x = 40; x < MW; x++) { m[16][x] = T.WALL; m[25][x] = T.WALL; }
+  for (let y = 16; y < 26; y++) { m[y][40] = T.WALL; m[y][MW-1] = T.WALL; }
+  m[20][40] = T.CAMP; m[21][40] = T.CAMP; // gate
+
+  // Troll cave (bottom-east)
+  for (let y = 27; y < MH; y++) {
+    for (let x = 45; x < MW; x++) {
+      m[y][x] = T.CAVE;
+    }
+  }
+
+  // Path / stone trail along x=32-33 (east side of river)
+  for (let y = 1; y < MH-1; y++) {
+    if (m[y][33] !== T.DEEP && m[y][33] !== T.SHALLOW) m[y][33] = T.STONE;
+  }
+  // Bridges across the river
+  for (let dx = -2; dx <= 2; dx++) {
+    m[12][rx+dx] = T.STONE;
+    m[28][rx+dx] = T.STONE;
+  }
+
   return m;
 }
 function placeEnemies(map){
@@ -1226,9 +1370,25 @@ function placeEnemies(map){
       en.push(mkEnemy(type,x,y));used.add(k);
     }
   };
-  [[18,3],[22,5],[25,8],[20,10],[28,4],[16,7]].forEach(([x,y],i)=>add(i===2?'wolf2':'wolf',x,y));
-  [[25,16],[29,17],[27,19],[32,17],[35,15]].forEach(([x,y],i)=>add(['goblin','goblin','goblin2','goblin3','goblin'][i],x,y));
-  add('troll',33,26);
+
+  // ── WEST: Deep forest fauna ──
+  // Foxes scattered through forest
+  [[18,5],[24,9],[20,13],[16,18],[22,22],[26,16],[14,28]].forEach(([x,y]) => add('fox',x,y));
+  // Ravens — fewer, in clearings
+  [[12,3],[15,11],[8,15],[20,30],[5,8]].forEach(([x,y]) => add('raven',x,y));
+  // Bear semi-boss in its glade
+  add('bear', 5, 22);
+
+  // ── EAST: wolves, goblins, troll (unchanged composition) ──
+  // Wolves in eastern forest (x=34..58, y=0..15)
+  [[38,3],[42,5],[45,8],[40,10],[48,4],[36,7],[52,11]].forEach(([x,y],i)=>add(i===2?'wolf2':'wolf',x,y));
+
+  // Goblins in camp (x=41..58, y=17..24)
+  [[44,18],[48,19],[46,21],[51,19],[55,17],[53,22]].forEach(([x,y],i)=>add(['goblin','goblin','goblin2','goblin3','goblin','goblin'][i],x,y));
+
+  // Troll in cave
+  add('troll', 52, 35);
+
   return en;
 }
 function placeChests(map){
@@ -1417,20 +1577,86 @@ function drawMap(){
     });
   }
 
-  // Adjacent enemy with telegraph — pulse red ring
-  if (!G.armed) {
-    const px = G.player.x, py = G.player.y;
-    G.enemies.forEach(e => {
-      if (!e.alive) return;
-      if (chebyshev(e.x, e.y, px, py) !== 1) return;
-      if (!e.nextMove || !e.attackReady) return;
-      const t = (Date.now() / 600) % 1;
-      const alpha = 0.4 + 0.5 * Math.sin(t * Math.PI * 2);
-      ctx.strokeStyle = `rgba(255,80,40,${alpha})`;
-      ctx.lineWidth = 2.5;
-      ctx.strokeRect(e.x*TILE + 1, e.y*TILE + 1, TILE - 2, TILE - 2);
-    });
-  }
+  // ── Enemy intent indicators ──
+  // For any enemy with a queued telegraphed move (whether adjacent or about to be),
+  // show: colored pulsing ring + intent icon badge + attack arrow if adjacent.
+  const px = G.player.x, py = G.player.y;
+  const allActors = G.enemies.concat(G.player.inSpiritRealm ? G.spirits : []);
+  allActors.forEach(e => {
+    if (!e.alive || !e.nextMove || !e.attackReady) return;
+    if (G.player.isSpirit && G.enemies.includes(e)) return; // living can't see ghost player
+
+    // Categorize the move for colour coding
+    const move = e.nextMove;
+    let color = '#ff8030', label = '⚔', glowColor = 'rgba(255,128,48,0.7)';
+    if (move.heavy) {
+      color = '#ff3020'; label = '⚠'; glowColor = 'rgba(255,48,32,0.85)';
+    } else if (move.inflict === 'poison') {
+      color = '#a050ff'; label = '☠'; glowColor = 'rgba(160,80,255,0.7)';
+    } else if (move.inflict === 'bleed') {
+      color = '#c03050'; label = '🩸'; glowColor = 'rgba(192,48,80,0.7)';
+    } else if (move.inflict === 'stun') {
+      color = '#b070d8'; label = '💫'; glowColor = 'rgba(176,112,216,0.7)';
+    } else if (move.heal) {
+      color = '#40c060'; label = '💚'; glowColor = 'rgba(64,192,96,0.7)';
+    } else if (move.selfBuff) {
+      color = '#ffaa20'; label = '🔥'; glowColor = 'rgba(255,170,32,0.7)';
+    }
+
+    // Animated pulse alpha
+    const t = (Date.now() / 600) % 1;
+    const pulseAlpha = 0.5 + 0.45 * Math.sin(t * Math.PI * 2);
+
+    // Glow ring
+    ctx.save();
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = 14;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.globalAlpha = pulseAlpha;
+    ctx.strokeRect(e.x*TILE + 1, e.y*TILE + 1, TILE - 2, TILE - 2);
+    ctx.restore();
+
+    // Intent badge — large icon above the enemy's tile
+    ctx.save();
+    const badgeX = e.x * TILE + TILE - 8;
+    const badgeY = e.y * TILE + 8;
+    // Backplate
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.beginPath();
+    ctx.arc(badgeX, badgeY, 9, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Icon
+    ctx.fillStyle = color;
+    ctx.font = `bold ${TILE*0.4}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, badgeX, badgeY + 1);
+    ctx.restore();
+
+    // Strike-direction arrow — if enemy is orthogonally adjacent and will attack player
+    if (dist(e.x, e.y, px, py) === 1 && (move.dmgMult || 0) > 0) {
+      const dx = Math.sign(px - e.x), dy = Math.sign(py - e.y);
+      // Draw arrow at the boundary between enemy tile and player tile
+      const ax = e.x*TILE + TILE/2 + dx*TILE*0.5;
+      const ay = e.y*TILE + TILE/2 + dy*TILE*0.5;
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = pulseAlpha;
+      ctx.translate(ax, ay);
+      ctx.rotate(Math.atan2(dy, dx));
+      ctx.beginPath();
+      ctx.moveTo(8, 0);
+      ctx.lineTo(-4, -5);
+      ctx.lineTo(-4, 5);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  });
 
   scrollToPlayer();
   document.getElementById('turn-counter').textContent = `Turn ${G.turn}`;
@@ -2750,11 +2976,22 @@ function endPlayerTurn({ moved = false, braced = false, extraTicks = 0 } = {}) {
 function refreshTelegraphBanner() {
   const banner = document.getElementById('telegraph-banner');
   const p = G.player;
-  // Find adjacent enemy with a queued nextMove
-  const adj = G.enemies.find(e => e.alive && chebyshev(e.x, e.y, p.x, p.y) === 1 && e.nextMove);
+  // Find any adjacent enemy/spirit with a queued, ready move
+  const pool = G.enemies.concat(p.inSpiritRealm ? G.spirits : []);
+  const adj = pool.find(e => e.alive && e.attackReady && e.nextMove &&
+    dist(e.x, e.y, p.x, p.y) === 1 && !(p.isSpirit && G.enemies.includes(e)));
   if (adj && adj.nextMove) {
-    banner.textContent = `${adj.name}: ${adj.nextMove.telegraph || adj.nextMove.name}`;
-    banner.className = 'show' + (adj.nextMove.heavy ? '' : ' weak');
+    const m = adj.nextMove;
+    let icon = '⚔', kind = 'weak';
+    if (m.heavy) { icon = '⚠'; kind = ''; }
+    else if (m.inflict === 'poison') { icon = '☠'; }
+    else if (m.inflict === 'bleed') { icon = '🩸'; }
+    else if (m.inflict === 'stun') { icon = '💫'; }
+    else if (m.heal) { icon = '💚'; }
+    else if (m.selfBuff) { icon = '🔥'; }
+    const advice = m.heavy ? ' — BRACE!' : '';
+    banner.textContent = `${icon} ${adj.name} will use ${m.name}${advice}`;
+    banner.className = 'show' + (m.heavy ? '' : ' weak');
   } else {
     banner.className = '';
     banner.textContent = '';
@@ -3244,7 +3481,7 @@ function newGameState(diff, cls){
     chests: [],
     spirits: [], // spawned on demand when player enters spirit realm
     player: {
-      x:14, y:15,
+      x:33, y:20,
       hp:c.hp, maxHp:c.hp,
       shield:c.shield, shieldMax:c.shield,
       stamina:c.stam, stamMax:c.stam,
@@ -3329,10 +3566,9 @@ function startPulseLoop() {
   if (pulseLoopId) cancelAnimationFrame(pulseLoopId);
   function loop() {
     if (G.gameOver) return;
-    // Only redraw if there's something animated worth redrawing
-    const hasPulser = G.enemies && G.enemies.some(e =>
-      e.alive && chebyshev(e.x, e.y, G.player.x, G.player.y) === 1 && e.attackReady
-    );
+    // Redraw if any enemy/spirit has a queued telegraphed move (for animated badge/ring/arrow)
+    const pool = G.enemies.concat(G.player.inSpiritRealm ? (G.spirits||[]) : []);
+    const hasPulser = pool.some(e => e.alive && e.attackReady && e.nextMove);
     if (hasPulser) drawMap();
     pulseLoopId = requestAnimationFrame(loop);
   }
